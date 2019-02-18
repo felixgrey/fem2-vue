@@ -318,6 +318,8 @@ Agent.component = () => {
   errorLog('must implement Agent.component first');
 };
 
+
+export * from './Data';
 export * from './Utils';
 export {
   manager,

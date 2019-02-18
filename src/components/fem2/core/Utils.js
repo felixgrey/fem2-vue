@@ -2,7 +2,7 @@
 export const context = {};
 
 export function noValue(value){
-    return (value === null || value === undefined);
+  return (value === null || value === undefined);
 }
 
 export function removeArrayItem(arr, item){
@@ -81,42 +81,6 @@ export function arrToObj(arr, key){
   let obj = {};
   arr.forEach((item)=>{ obj[item[key]] =item });
   return obj;
-}
-
-/*
-  按照KEY的插入顺序遍历的map
-*/
-export class OrderedMap {
-  constructor(){
-    this.map = {};
-    this.keyMap = {};
-    this.keyList = [];
-    this.keyCount = {};
-  }
-
-  put(key, value){
-    if (!this.keyMap[key]) {
-      this.keyList.push(key);
-      this.keyMap[key] = 1;
-      this.keyCount[key] = 0;
-    }
-    this.keyCount[key]++;
-    return this.map[key] = value;
-  }
-
-  get(key) {
-    return this.map[key];
-  }
-
-  keys() {
-    return this.keyList;
-  }
-
-  values() {
-    return this.keyList.map((key) => {
-        return this.map[key]
-    })
-  }
 }
 
 export function formatPercentNumber(number, fixed = 2, decimal = true, noSymbol = false){

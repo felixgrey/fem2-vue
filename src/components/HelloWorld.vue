@@ -11,6 +11,7 @@
 <script>
 /* eslint-disable */
 import {manager, Store, Agent, blank} from '@/components/fem2';
+import  './helloData';
 
 //console.log(manager);
 
@@ -155,7 +156,7 @@ class Hello extends blank {
 					$data1, // data1数据数组第一条
 					_data1 // data1数据状态
 				} = this.model;
-				console.log({data1, $data1, _data1});
+				//console.log({data1, $data1, _data1});
 			});
 			
 			setTimeout(() => {			
@@ -172,7 +173,7 @@ class Hello extends blank {
 					$data2, // data2数据数组第一条
 					_data2 // data2数据状态
 				} = this.$$store.model; //注意是store的model
-				console.log({data2, $data2, _data2});
+				//console.log({data2, $data2, _data2});
 				
 			},500);
 			
