@@ -10,8 +10,8 @@
 
 <script>
 /* eslint-disable */
-import {manager, Store, Agent, blank} from '@/components/fem2';
-import  './helloData';
+import {manager, Store, Agent, blank} from '@/components/fem2Pro';
+//import  './helloData';
 
 //console.log(manager);
 

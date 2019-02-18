@@ -288,24 +288,6 @@ Agent.commonConfig = (config) => {
   manager && manager.emit('$commonConfig', Object.freeze({...config}));
 };
 
-context._componentsConfig = {};
-Agent.componentsConfig = (config) => {
-  if(noValue(config)){
-    return Object.freeze({...context._componentsConfig});
-  }
-  context._componentsConfig = config;
-  manager && manager.emit('$componentsConfig', Object.freeze({...config}));
-};
-
-context._menuConfig = {};
-Agent.menuConfig = (config) => {
-  if(noValue(config)){
-    return Object.freeze({...context._menuConfig});
-  }
-  context._menuConfig = config;
-  manager && manager.emit('$menuConfig', Object.freeze({...config}));
-};
-
 Agent.router = () => {
   errorLog('must implement Agent.router first');
 };
@@ -317,7 +299,6 @@ Agent.ajax = () => {
 Agent.component = () => {
   errorLog('must implement Agent.component first');
 };
-
 
 export * from './Data';
 export * from './Utils';
