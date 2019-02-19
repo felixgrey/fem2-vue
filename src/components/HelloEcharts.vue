@@ -62,7 +62,7 @@ function test() {
 	  // yAxisField的聚合方式，通常不用填，默认 transform.AGGREGATES.sum
 	  aggregate: transform.AGGREGATES.sum, // 值聚合函数	  
 	  // 样式配置，非必填
-	  colors: ['red','yellow','green','blue'], // 全部颜色,按次序循环使用 
+	  colors: ['red','yellow','green','blue'], // 全部颜色,按次序循环使用, 默认使用全局配置 
 	  smooth: true, // 平滑曲线, 只在 type=line 有效
 	  stack: false, // 是否是堆叠图，默认 false
 		//type: 'bar', // line bar area 必须小写,默认line
