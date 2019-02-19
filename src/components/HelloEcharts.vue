@@ -53,14 +53,14 @@ function test() {
 	  // 必填
 	  dataSource: data, // 数据源, 默认空数组
 	  xAxisField: 'hospital', // x轴对应字段
-	  yAxisField: 'money', // y轴对应字段
-	  
+	  yAxisField: 'money', // y轴对应字段  
 	  // 多系列（类目）必填，单系列不要填
 	  seriesField: 'sex', // 系列对应字段
 	  
-	  // yAxisField的聚合方式，通常不用填，默认 transform.AGGREGATES.sum
-	  aggregate: transform.AGGREGATES.sum, // 值聚合函数
 	  
+	  
+	  // yAxisField的聚合方式，通常不用填，默认 transform.AGGREGATES.sum
+	  aggregate: transform.AGGREGATES.sum, // 值聚合函数	  
 	  // 样式配置，非必填
 	  colors: ['red','yellow','green','blue'], // 全部颜色,按次序循环使用 
 	  smooth: true, // 平滑曲线, 只在 type=line 有效
