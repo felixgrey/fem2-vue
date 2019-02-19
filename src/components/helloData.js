@@ -6,7 +6,9 @@ const {
   fromArrayInArray, // 二维数组：ArrayInArray（第一条是字段名数组）格式转为对象数组：ObjectInArray格式
   fromObjectInArray, // 对象数组：ObjectInArray格式转为二维数组：ArrayInArray（第一条是字段名数组）格式
   transportArrayInArray, // 二维数组：ArrayInArray（第一条是字段名数组）行列互换，（第一列是字段名）
-  transportObjectInArray // 对象数组转换为列数组对象（字段名:数组格式）
+  transportObjectInArray, // 对象数组转换为列数组对象（字段名:数组格式）
+  fromStruct // 结构化数据（树形结构）转为对象数组
+  
 } = transform;
 
 // 自带的全部6个聚合函数
@@ -47,7 +49,7 @@ console.log(data);
 const transformedData = transform({
   dataSource: data, // 数据源，需要ObjectInArray格式
   aggregate: { // 配置字段聚合函数
-//  money: sum, // 默认求和
+//  money: sum, // 金额默认求和
     age: aver, // 平均年龄
     count: count, // 自定义字段：聚合条数
     id: join, // 聚合的数据id

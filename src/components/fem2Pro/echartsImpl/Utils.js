@@ -1,11 +1,11 @@
 import echarts from 'echarts';
-import {transform} from '@/components/fem2';
+import {transform, DataSetTransformer, mergeConfig, noValue} from '@/components/fem2';
 
 transform.echarts = {
   COLORS: ['#c23531', '#2f4554', '#61a0a8', '#d48265', '#91c7ae','#749f83', '#ca8622', '#bda29a','#6e7074', '#546570', '#c4ccd3'],
 };
 
-export function echartsColors(current  = 'rgba(0,0,0,1)') {
+export function echartsColors(current  = 'rgba(0,0,0,1)', param = {}) {
   return function (colorPattern, extend = {}) {
     if (!colorPattern) {
       return 'transparent';
@@ -22,7 +22,7 @@ export function echartsColors(current  = 'rgba(0,0,0,1)') {
     } = extend;
   
     if (typeof colorPattern === 'function') {
-      return colorPattern(current, echarts);
+      return colorPattern(current, param, echarts);
     } else if (Array.isArray(colorPattern)) {    
       extend = colorPattern[1];
       colorPattern = colorPattern[0];
@@ -66,3 +66,51 @@ export function echartsColors(current  = 'rgba(0,0,0,1)') {
     return  current;
   };  
 }
+
+export class EchartsTransformer extends DataSetTransformer {
+  
+  _beforeInit(param = {}, {defaultType, mustHas = [] , name = ''}) {
+    
+    if(noValue(param.dataSource)){
+      throw new Error(`Echars(${name}) dataset must has dataSource`);
+    }
+    
+    mustHas.forEach(field => {
+      if (noValue(param[field])) {
+        throw new Error(`Echars(${name}) dataset must has ${mustHas.join(',')}`);
+      }   
+    });
+
+    mergeConfig(this, param, {
+      colors: transform.echarts.COLORS,
+      itemColors: ':-',
+      aggregate: transform.AGGREGATES.sum,
+      type: defaultType
+    });
+
+    if (typeof this._type === 'string') {
+      const __type = this._type;
+      this._type = () => __type;
+    }
+    
+  }
+  
+  _beforeOutput() {
+    const allColors = this._colors;
+    const fields = {};
+    this._groupFieldValues.forEach((valueSet, index) => {
+      fields[this._groupFields[index]] = Array.from(valueSet) ;
+    });
+    
+    return {
+      fields,
+      allColors
+    };
+  }
+
+  
+}
+
+
+
+

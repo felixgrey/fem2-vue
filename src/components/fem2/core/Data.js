@@ -100,6 +100,22 @@ export class DataMap extends Map {
   }
 }
 
+function traceObj(obj = {}, _dataMap = new DataMap()) {
+  for (let key in obj) {
+    const value = obj[key];
+    if(typeof value === 'object' && !Array.isArray(value)) {
+      traceObj(value, _dataMap);
+    } else {
+      _dataMap.set(key, value);
+    }
+  }
+  return _dataMap;
+}
+
+DataMap.fromObject = function(obj = {}) {
+  return traceObj(obj);
+}
+
 /*
   用于做聚合操作的数据集
  */
@@ -193,6 +209,13 @@ export function transform(config) {
   return new DataSetTransformer(config).output();
 }
 transform.AGGREGATES = AGGREGATES;
+
+/*
+  Struct to ObjectInArray
+ */
+transform.fromStruct = function(obj){
+  return DataMap.fromObject(obj).toObjectInArray();
+}
 
 /*
  ArrayInArray to ObjectInArray

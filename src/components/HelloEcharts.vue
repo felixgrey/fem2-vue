@@ -1,7 +1,7 @@
 <template>
 	<div>
 		<div>{{refresh}}</div>
-		<v-chart :options="lbaChartOption"/>
+		<v-chart :options="chartOption"/>
 	</div>
 </template>
 
@@ -49,6 +49,7 @@ const transformedData = transform({
 //console.log(transformedData);
 
 function test() {
+	// lba的含义是 Line Bar Area 这三种图表的数据格式完全一样，因此统一处理
 	return transform.echarts.lbaOption({
 	  // 必填
 	  dataSource: data, // 数据源, 默认空数组
@@ -56,9 +57,7 @@ function test() {
 	  yAxisField: 'money', // y轴对应字段  
 	  // 多系列（类目）必填，单系列不要填
 	  seriesField: 'sex', // 系列对应字段
-	  
-	  
-	  
+ 
 	  // yAxisField的聚合方式，通常不用填，默认 transform.AGGREGATES.sum
 	  aggregate: transform.AGGREGATES.sum, // 值聚合函数	  
 	  // 样式配置，非必填
@@ -79,32 +78,36 @@ function test() {
 	    offsetfrom: 0,
 	    offsetTo: 1
 	  }], // 图形渐变色
-	//itemColors: (current, echarts) => { console.log(current, echarts); return 'black'} // 也可以直接写函数，返回颜色，current是按次序应该用的颜色
+	//itemColors: (current, param, echarts) => { console.log(current, echarts); return 'black'} // 也可以直接写函数，返回颜色，current是按次序应该用的颜色
 	});
 }
 
 
-// lba的含义是 Line Bar Area 这三种图表的数据格式完全一样，因此统一处理
-let lbaChartOption = test();
+let chartOption;
+//chartOption = test();
 
-
-
+chartOption = transform.echarts.rpOption({
+	dataSource: data,
+	nameField: 'hospital',
+	valueField: 'money',
+	aggregate: transform.AGGREGATES.sum, // 值聚合函数	  
+//	itemColors: 'black-'
+})
 
 //echarts配置
-//console.log(lbaChartOption);
+//console.log(chartOption);
 
-
-lbaChartOption.title = {
-    text: '旧的雨量流量关系图',
-    subtext: '数据来自西安兰特水电测控技术有限公司',
-    x: 'center'
-};
+//chartOption.title = {
+//  text: '旧的雨量流量关系图',
+//  subtext: '数据来自西安兰特水电测控技术有限公司',
+//  x: 'center'
+//};
 
 export default {
 	data () {
 		return {
 			refresh: '没有刷新',
-			lbaChartOption
+			chartOption
 		}
 	},
 	mounted(){	
@@ -122,14 +125,13 @@ export default {
 			
 			// data = [];
 			
-			lbaChartOption.title = { // 如果是新增变量就不能刷新
+			chartOption.title = { // 如果是新增变量就不能刷新
 		        text: '新的雨量流量关系图',
 		        subtext: '数据来自西安兰特水电测控技术有限公司',
 		        x: 'center'
 		    };
 		    this.refresh = '刷新了！！';
-			this.lbaChartOption = test();
-			console.log('刷新',this.lbaChartOption); 
+			this.chartOption = chartOption //test();
 		}, 3000);
 	}
 }

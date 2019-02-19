@@ -1,5 +1,5 @@
-import {echartsColors} from './Utils';
-import {transform, DataSetTransformer, noValue, mergeConfig} from '@/components/fem2';
+import {echartsColors, EchartsTransformer} from './Utils';
+import {transform, mergeConfig} from '@/components/fem2';
 /*
   折线 条形 区域
  */
@@ -7,29 +7,21 @@ function isLba(type){
   return new RegExp('^line$|^bar$|^area$','g').test(type);
 }
 
-export class LbaTransformer extends DataSetTransformer {
-  _init(param = {}) {  
-    const {dataSource, xAxisField, yAxisField, seriesField} = param;
-
-    if(noValue(xAxisField) || noValue(yAxisField)) {
-      throw new Error(`Echars(lba) dataset must has xAxisField and yAxisField`);
-    }
-    
-    mergeConfig(this, param, {
-      dataSource: [],
-      colors: transform.echarts.COLORS,
-      smooth: false,
-      stack: false,
-      itemColors: ':-',
-      areaColors: ':-',
-      aggregate: transform.AGGREGATES.sum,
-      type: 'line'
+export class LbaTransformer extends EchartsTransformer {
+  _init(param = {}) { 
+    this._beforeInit(param, {
+      defaultType: 'line',
+      name: 'lba',
+      mustHas: ['xAxisField', 'yAxisField']
     });
     
-    if (typeof this._type === 'string') {
-      const __type = this._type;
-      this._type = () => __type;
-    }
+    const {dataSource, xAxisField, yAxisField, seriesField} = param;
+
+    mergeConfig(this, param, {
+      smooth: false,
+      stack: false,
+      areaColors: ':-'
+    });
 
     const config = {
       dataSource,
@@ -44,13 +36,8 @@ export class LbaTransformer extends DataSetTransformer {
   }
   
   output() {
-    const allColors = this._colors;
+    const {fields, allColors} = this._beforeOutput();
     const stack = this._stack ? this._yAxisField : false;
-    
-    const fields = {};
-    this._groupFieldValues.forEach((valueSet, index) => {
-      fields[this._groupFields[index]] = Array.from(valueSet) ;
-    }); 
     const seriesNames = fields[this._seriesField] || [null];
   
     const _seriesData = Array.from(this._data.keys()).map(key => this._data.get(key));  
@@ -60,10 +47,10 @@ export class LbaTransformer extends DataSetTransformer {
       return _seriesData.map(dataMap => dataMap.get(this._yAxisField)) 
     };
     
-    const series = seriesNames.map((name, index) => { 
-      let geomType = this._type(name);
+    const series = seriesNames.map((name, index) => {  
       const current = allColors[index % allColors.length];
-      
+
+      let geomType = this._type(name);
       if (!isLba(geomType)) {
         throw new Error(`wrong type ${geomType}`);
       }
@@ -72,13 +59,17 @@ export class LbaTransformer extends DataSetTransformer {
       let areaColor = 'transparent';
       if (isArea) {
         geomType = 'line';
-        areaColor = echartsColors(current)(this._areaColors);
+        areaColor = (param) => {
+          return echartsColors(current, param)(this._areaColors)
+        }
       }
 
       return {
         name,
         itemStyle:{
-          color: echartsColors(current)(this._itemColors)
+          color: (param) => {
+            return echartsColors(current, param)(this._itemColors)
+          }    
         },
         areaStyle:{
           color: areaColor, 
@@ -91,7 +82,7 @@ export class LbaTransformer extends DataSetTransformer {
     });
     
     return {
-      color: this._colors,
+      color: allColors,
       legend:{
         data: seriesNames
       },
