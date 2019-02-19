@@ -41,7 +41,7 @@ const _AGGREGATES = {
    // 字符串连接
   'join': ({field, value, item, option, keyCounts, defaultText}) => {
     const itemValue = noValue(item[field]) ? defaultText : item[field];
-    return keyCounts === 0 ? itemValue : `${value}${option.$split || ','}${itemValue}`;
+    return keyCounts === 0 ? `${itemValue}` : `${value}${option.$split || ','}${itemValue}`;
   }
 };
 
@@ -210,13 +210,41 @@ transform.fromArrayInArray = function(dataSource) {
 }
 
 /*
+ interchange row and col
+ */
+transform.transportArrayInArray = function(dataSource) {
+  dataSource = [].concat(dataSource);
+  const fields = dataSource.shift() || {}; 
+  return fields.map((field, index) => {
+    return [field].concat(dataSource.map(row => row[index]));
+  }); 
+}
+
+/*
+ interchange object and array
+ */
+transform.transportObjectInArray = function(dataSource) {
+  const fields = Object.keys(dataSource[0] || {});
+  const series = {};
+  fields.forEach(field => {
+    series[field] = [];
+  });
+  dataSource.forEach(item => {
+    fields.forEach(field => {
+      series[field].push(item[field]);
+    });
+  });
+  return series
+}
+
+/*
  ObjectInArray to ArrayInArray
  */
 transform.fromObjectInArray = function(dataSource) {
-  const keys = Object.keys(dataSource[0] || {});
+  const fields = Object.keys(dataSource[0] || {});
   const newSource = dataSource.map(item => {
-    return keys.map(key => item[key]);
+    return fields.map(field => item[field]);
   });
-  newSource.splice(0, 0, keys);
+  newSource.splice(0, 0, fields);
   return newSource;
 }

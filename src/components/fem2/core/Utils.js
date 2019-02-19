@@ -56,7 +56,6 @@ export function uniRandom() {
   return uniBaseIndex + (uniBaseIndexNext++); 
 }
 
-
 context.STOPRUN = uniRandom();
 
 export function monkey(fun = blank, before, after) {
@@ -147,3 +146,16 @@ export class Chronograph {
   }
 }
 
+export function doubleMode(param, fun = same) {
+  if(typeof param !== 'function'){
+    return fun(param);
+  }
+  return param;
+}
+
+export function mergeConfig(obj ={}, cfg = {}, defaultValue = {}) {
+  for (let name in cfg) {
+    obj[`_${name}`] = cfg[name] === undefined ? defaultValue[name] : cfg[name];
+  }
+  return obj;
+}

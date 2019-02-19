@@ -4,7 +4,9 @@ import {transform} from '@/components/fem2';
 const {
   AGGREGATES,  // 自带的聚合函数
   fromArrayInArray, // 二维数组：ArrayInArray（第一条是字段名数组）格式转为对象数组：ObjectInArray格式
-  fromObjectInArray // 对象数组：ObjectInArray格式转为二维数组：ArrayInArray（第一条是字段名数组）格式
+  fromObjectInArray, // 对象数组：ObjectInArray格式转为二维数组：ArrayInArray（第一条是字段名数组）格式
+  transportArrayInArray, // 二维数组：ArrayInArray（第一条是字段名数组）行列互换，（第一列是字段名）
+  transportObjectInArray // 对象数组转换为列数组对象（字段名:数组格式）
 } = transform;
 
 // 自带的全部6个聚合函数
@@ -75,7 +77,11 @@ console.log(transformedData);
 // 两种数据集格式转换
 const arrayInArray = fromObjectInArray(transformedData.list);
 console.log(arrayInArray);
+console.log(transportArrayInArray(arrayInArray));
 console.log(fromArrayInArray(arrayInArray));
+console.log(transportObjectInArray(transformedData.list));
+
+
 
 /* 
  transformedData =

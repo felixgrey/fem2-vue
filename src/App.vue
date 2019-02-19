@@ -6,8 +6,9 @@
 </template>
 
 <script>
-import HelloEcharts from './components/HelloEcharts.vue'
-import HelloWorld from './components/HelloWorld.vue'
+import HelloEcharts from './components/HelloEcharts.vue';
+import HelloWorld from './components/HelloWorld.vue';
+//import './components/helloData';
 
 export default {
   name: 'app',
