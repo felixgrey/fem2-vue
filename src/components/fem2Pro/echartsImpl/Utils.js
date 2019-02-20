@@ -2,6 +2,30 @@ import echarts from 'echarts';
 import {transform, DataSetTransformer,  noValue} from '@/components/fem2/core/Data';
 export * from '@/components/fem2/core/Data';
 
+function _$femOnSetOption(opts = {}) {
+  if(!opts.$onSetOption) {
+    return;
+  }
+  setTimeout(() => {   
+    opts.$onSetOption(opts, this, !this._$notFemFirst);
+    this._$notFemFirst = true;
+  }); 
+}
+
+const oldInit = echarts.init;
+echarts.init = function(dom, theme, opts){
+  const chart = oldInit.apply(this, [dom, theme, opts]);
+  chart._$femOnSetOption = _$femOnSetOption;
+  chart._$femOnSetOption(opts);
+  const oldSetOption = chart.setOption;
+  chart.setOption = function(option, notMerge, lazyUpdate) {
+    const result = oldSetOption.apply(this,[option, notMerge, lazyUpdate]);
+    chart._$femOnSetOption(opts);
+    return result;
+  }
+  return chart;
+}
+
 let _resolve;
 const bmpReady = new Promise((resolve) => {
   _resolve = resolve;
@@ -56,7 +80,7 @@ export function echartsColors(current  = 'rgba(0,0,0,1)', param = {}) {
     if (!colorPattern) {
       return 'transparent';
     }
-    
+
     const {
       x = 0,
       y = 0,

@@ -1,5 +1,3 @@
-import echarts from 'echarts'; // 不同人可能用不同的echarts包，全都载入
-import echarts2 from 'echarts/lib/echarts'
 import 'echarts/extension/bmap/bmap';
 import {echartsColors, EchartsTransformer, transform, noValue, mergeConfig, bmpReady} from './Utils';
 /*
@@ -11,53 +9,6 @@ transform.bmapConfig = transform.bmapConfig || {};
 transform.bmapDeclaredArea = transform.bmapDeclaredArea || {};
 
 const blank = () => {};
-
-function _$femOnSetOption(opts) {
-  if(!opts) {
-    return;
-  }
-  setTimeout(() => {
-       
-    const {$afterSetOption = blank, $afterBmapReady = blank} = opts;
-    $afterSetOption(opts, this);
-    bmpReady.then(() => {
-      const bmap = this.getModel().getComponent('bmap').getBMap();
-      $afterBmapReady(bmap, this);
-    });    
-  }); 
-}
-
-function proxyEcharts(_echarts){
-  if (_echarts._$hasAddFemOnSetOption) {
-    return;
-  }
-  _echarts._$hasAddFemOnSetOption = true;
-  
-  // 用echarts对象间接获取原型
-  const blankEchart = _echarts.init(document.createElement('div'));
-  const echartPrototype = blankEchart.__proto__.constructor.prototype; 
-  echartPrototype._$femOnSetOption = _$femOnSetOption;
-  
-  // 代理charts.init；
-  const oldInit = _echarts.init;
-  _echarts.init = function(dom, theme, opts) {
-    const chart = oldInit.bind(this)(dom, theme, opts);
-    chart._$femOnSetOption(opts);
-    return chart;
-  }
-  
-  // 代理echarts原型setOption
-  const oldSetOption = echartPrototype.setOption;
-  echartPrototype.setOption = function(option, notMerge, lazyUpdate) {
-    const result = oldSetOption.bind(this)(option, notMerge, lazyUpdate);
-    this._$femOnSetOption(option);
-    return result;
-  }
-}
-
-// 不论哪个包里的，都代理就对啦
-proxyEcharts(echarts);
-proxyEcharts(echarts2);
 
 export class BmapTransformer extends EchartsTransformer {
   _init (param = {}) {
@@ -75,6 +26,7 @@ export class BmapTransformer extends EchartsTransformer {
       mapSize: null,
       mapColor: null,
       onMapInit: blank,
+      afterSetOption: blank,
       bmapConfig: Object.assign(bmapConfig, transform.bmapConfig)
     });
     
@@ -97,10 +49,7 @@ export class BmapTransformer extends EchartsTransformer {
     this._checkGeomType(geomType);
     const {_lngField, _latField, _valueField} = this;
     
-    return {
-      $afterBmapReady:(bmap, chart) => {
-        console.log(bmap, chart);
-      },
+    return {    
       bmap: this._bmapConfig,
       series:[{
         coordinateSystem: 'bmap',
@@ -119,9 +68,6 @@ export class BmapTransformer extends EchartsTransformer {
 }
 
 transform.echarts.bmapOption = function(param = {}) {
-  if(!global.BMap) {
-    throw new Error('BMap has not loaded please use bmpReady.then((BMap) => {[your code]})');
-  }
   return new BmapTransformer(param).output();
 }
 

@@ -1,7 +1,7 @@
 <template>
 	<div>
 		<div>{{refresh}}</div>
-		<v-chart :options="chartOption"/>
+		<v-chart v-if="chartOption" :options="chartOption"/>
 	</div>
 </template>
 
@@ -52,8 +52,8 @@ const transformedData = transform({
 
 //console.log(transformedData);
 
-function test() {
-	// lba的含义是 Line Bar Area 这三种图表的数据格式完全一样，因此统一处理
+function testLbaOption() {
+	// lba的含义是 line bar area 这三种图表的数据格式完全一样，因此统一处理
 	return transform.echarts.lbaOption({
 	  // 必填
 	  dataSource: data, // 数据源, 默认空数组
@@ -88,22 +88,46 @@ function test() {
 
 
 let chartOption;
-//chartOption = test();
 
-//chartOption = transform.echarts.rpOption({
-//	dataSource: data,
-//	nameField: 'hospital',
-//	valueField: 'money',
-//	aggregate: transform.AGGREGATES.sum, // 值聚合函数	  
-////	itemColors: 'black-'
-//})
+let lbaOption = testLbaOption();
+
+// rp的含义是 radar pie
+let rpOption = transform.echarts.rpOption({
+	dataSource: data,
+	nameField: 'hospital',
+	valueField: 'money',
+	aggregate: transform.AGGREGATES.sum, // 值聚合函数	  
+//	itemColors: 'black-'
+})
+
+let mapOption = transform.echarts.bmapOption({
+	dataSource: data,
+	lngField: 'lng',
+	latField: 'lat',
+	valueField: 'money',
+	type: 'scatter',
+});
+
+lbaOption.$onSetOption = (option, chart, map, first) => {
+	console.log(`图表${first ? '是': '不是'}第一次执行setOption`, option, chart);
+};
+
+rpOption.$onSetOption = (option, chart, first) => {
+	console.log(`图表${first ? '是': '不是'}第一次执行setOption`, option, chart);
+};
+
+// option新增配置项$onSetOption,在执行setOption之后执行此方法
+mapOption.$onSetOption = (option, chart, first) => {
+	console.log(`图表${first ? '是': '不是'}第一次执行setOption`, option, chart);
+};
+
+chartOption = mapOption;
 
 //echarts配置
 //console.log(chartOption);
 
 //chartOption.title = {
-//  text: '旧的雨量流量关系图',
-//  subtext: '数据来自西安兰特水电测控技术有限公司',
+//  text: '旧的标题',
 //  x: 'center'
 //};
 
@@ -111,11 +135,23 @@ export default {
 	data () {
 		return {
 			refresh: '没有刷新',
-			chartOption
+			chartOption: null
 		}
 	},
-	mounted(){	
+	mounted(){
+		
+		if(chartOption !== mapOption){
+			this.chartOption = chartOption;
+		}
+		
+		// 地图图表必须在地图API加载完成后配置
+		bmpReady.then(() => {
+			this.chartOption = mapOption;
+//			this.chartOption = testLbaOption();
+		});
+
 		setTimeout(() => {
+			this.refresh = '刷新了！！';	
 			
 			for (let i = 12; i < 20; i++) {
 			  data.push({
@@ -127,16 +163,7 @@ export default {
 			  });
 			}
 			
-			// 地图图表必须在地图API加载完成后配置
-			bmpReady.then(() => {
-				this.chartOption = transform.echarts.bmapOption({
-					dataSource: data,
-					lngField: 'lng',
-					latField: 'lat',
-					valueField: 'money',
-					type: 'scatter',
-				});
-			});
+			
 			
 			// data = [];
 			
@@ -145,9 +172,9 @@ export default {
 //		        subtext: '数据来自西安兰特水电测控技术有限公司',
 //		        x: 'center'
 //		    };
-//		    this.refresh = '刷新了！！';
-//			this.chartOption = chartOption //test();
-		}, 3000);
+//			this.chartOption = chartOption;
+			this.chartOption = testLbaOption();
+		}, 5000);
 	}
 }
 </script>
