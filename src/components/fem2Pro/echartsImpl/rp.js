@@ -1,18 +1,14 @@
-/* eslint-disable */
-import {echartsColors, EchartsTransformer} from './Utils';
-import {transform, noValue, mergeConfig} from '@/components/fem2';
+import {echartsColors, EchartsTransformer, transform} from './Utils';
 /*
   雷达 饼
  */
-function isRp(type) {
-  return new RegExp('^radar$|^pie$','g').test(type);
-}
 
 export class RpTransformer extends EchartsTransformer {
   _init (param = {}) {
     this._beforeInit(param, {
       defaultType: 'pie',
       name:'rp',
+      geomTypes: '^radar$|^pie$',
       mustHas: ['nameField', 'valueField']
     });
     
@@ -27,18 +23,15 @@ export class RpTransformer extends EchartsTransformer {
       valueFields: [valueField]
     };
 
-    super._init(config);
+    return super._init(config);
   }
   
   output() {
-    const {fields, allColors} = this._beforeOutput();    
+    const {allColors} = this._beforeOutput();    
     const {enums, list} = super.output();
-    const {_nameField, _valueField} = this;
-    
-    let geomType = this._type(null);
-    if (!isRp(geomType)) {
-      throw new Error(`wrong type ${geomType}`);
-    }
+    const {_nameField, _valueField} = this;  
+    const geomType = this._type(null);
+    this._checkGeomType(geomType);
     
     return {
       color: this._colors,

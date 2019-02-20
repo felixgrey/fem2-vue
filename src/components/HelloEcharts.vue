@@ -7,7 +7,7 @@
 
 <script>
 /* eslint-disable */
-import {transform} from '@/components/fem2Pro';
+import {transform, bmpReady} from '@/components/fem2Pro';
 
 // 全局配置色彩列表
 transform.echarts.COLORS = ["#26cdd8", '#3786ff', "#eec800", '#f5626f', '#9879ee'];
@@ -20,6 +20,8 @@ for (let i = 0 ; i < 8; i++) {
   data.push({
     id:i+1,
     hospital: i%3 == 0 ? '张三医院' : '李四医院',
+    lng: 122.85 + Math.random(),
+    lat: 41.25 + Math.random(),
     sex: i%2 ? '男' : '女',
     money: i*100 +5,
     age: 10+2*i,  
@@ -29,6 +31,8 @@ for (let i = 8; i < 12; i++) {
   data.push({
     id: i+1,
     hospital: '王五医院',
+    lng: 122.85 + Math.random(),
+    lat: 41.25 + Math.random(),
     sex: i%3 ? '女' : '男',
     money: i*200,
     age: 20+2*i,   
@@ -86,13 +90,13 @@ function test() {
 let chartOption;
 //chartOption = test();
 
-chartOption = transform.echarts.rpOption({
-	dataSource: data,
-	nameField: 'hospital',
-	valueField: 'money',
-	aggregate: transform.AGGREGATES.sum, // 值聚合函数	  
-//	itemColors: 'black-'
-})
+//chartOption = transform.echarts.rpOption({
+//	dataSource: data,
+//	nameField: 'hospital',
+//	valueField: 'money',
+//	aggregate: transform.AGGREGATES.sum, // 值聚合函数	  
+////	itemColors: 'black-'
+//})
 
 //echarts配置
 //console.log(chartOption);
@@ -123,15 +127,26 @@ export default {
 			  });
 			}
 			
+			// 地图图表必须在地图API加载完成后配置
+			bmpReady.then(() => {
+				this.chartOption = transform.echarts.bmapOption({
+					dataSource: data,
+					lngField: 'lng',
+					latField: 'lat',
+					valueField: 'money',
+					type: 'scatter',
+				});
+			});
+			
 			// data = [];
 			
-			chartOption.title = { // 如果是新增变量就不能刷新
-		        text: '新的雨量流量关系图',
-		        subtext: '数据来自西安兰特水电测控技术有限公司',
-		        x: 'center'
-		    };
-		    this.refresh = '刷新了！！';
-			this.chartOption = chartOption //test();
+//			chartOption.title = { // 如果是新增变量就不能刷新
+//		        text: '新的雨量流量关系图',
+//		        subtext: '数据来自西安兰特水电测控技术有限公司',
+//		        x: 'center'
+//		    };
+//		    this.refresh = '刷新了！！';
+//			this.chartOption = chartOption //test();
 		}, 3000);
 	}
 }

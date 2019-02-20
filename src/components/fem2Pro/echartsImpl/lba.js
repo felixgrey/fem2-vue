@@ -3,15 +3,12 @@ import {transform, mergeConfig} from '@/components/fem2';
 /*
   折线 条形 区域
  */
-function isLba(type){
-  return new RegExp('^line$|^bar$|^area$','g').test(type);
-}
-
 export class LbaTransformer extends EchartsTransformer {
   _init(param = {}) { 
     this._beforeInit(param, {
       defaultType: 'line',
       name: 'lba',
+      geomTypes: '^line$|^bar$|^area$',
       mustHas: ['xAxisField', 'yAxisField']
     });
     
@@ -32,7 +29,7 @@ export class LbaTransformer extends EchartsTransformer {
       valueFields: [yAxisField]
     };
 
-    super._init(config);  
+    return super._init(config);  
   }
   
   output() {
@@ -51,9 +48,7 @@ export class LbaTransformer extends EchartsTransformer {
       const current = allColors[index % allColors.length];
 
       let geomType = this._type(name);
-      if (!isLba(geomType)) {
-        throw new Error(`wrong type ${geomType}`);
-      }
+      this._checkGeomType(geomType);
       
       let isArea = geomType === 'area';
       let areaColor = 'transparent';

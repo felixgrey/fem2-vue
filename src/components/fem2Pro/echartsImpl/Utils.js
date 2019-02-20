@@ -1,5 +1,51 @@
 import echarts from 'echarts';
-import {transform, DataSetTransformer, mergeConfig, noValue} from '@/components/fem2';
+import {transform, DataSetTransformer,  noValue} from '@/components/fem2/core/Data';
+export * from '@/components/fem2/core/Data';
+
+let _resolve;
+const bmpReady = new Promise((resolve) => {
+  _resolve = resolve;
+});
+export {bmpReady};
+
+Object.defineProperty(transform, 'bmapAK',{
+  set:function(bmapAK) {
+    const {bmapVersion = '3.0'} = transform;
+    if(!bmapAK) {
+      throw new Error('must set bmapAK first');
+    }
+    
+    const callbackName =`_runBmapReady${Date.now()}` ;
+    global[callbackName] = function() {
+      _resolve(global.BMap);
+    };
+    
+    const {document, location} = global;
+    const scriptDom = document.createElement('script');
+    scriptDom.setAttribute('type', 'text/javascript');
+    scriptDom.setAttribute('src', `${location.protocol}//api.map.baidu.com/api?v=${bmapVersion}&ak=${bmapAK}&callback=${callbackName}`);   
+    document.head.appendChild(scriptDom);
+
+  }
+});
+
+export function mergeConfig(obj ={}, cfg = {}, defaultValue = {}) {
+  for (let name in cfg) {
+    const _name = `_${name}`;
+    if(obj[_name] === undefined) {
+      obj[_name] = cfg[name] === undefined ? defaultValue[name] : cfg[name];
+    }
+  }
+  
+  for (let name in defaultValue) {
+    const _name = `_${name}`;
+    if(obj[_name] === undefined) {
+      obj[_name] = defaultValue[name];
+    }
+  }
+  
+  return obj;
+}
 
 transform.echarts = {
   COLORS: ['#c23531', '#2f4554', '#61a0a8', '#d48265', '#91c7ae','#749f83', '#ca8622', '#bda29a','#6e7074', '#546570', '#c4ccd3'],
@@ -68,16 +114,19 @@ export function echartsColors(current  = 'rgba(0,0,0,1)', param = {}) {
 }
 
 export class EchartsTransformer extends DataSetTransformer {
+  _checkGeomType(geomType) {
+    return new RegExp(geomType,'g').test(this._geomTypes);
+  }
   
-  _beforeInit(param = {}, {defaultType, mustHas = [] , name = ''}) {
+  _beforeInit(param = {}, {defaultType, mustHas = [] , name = '', geomTypes = ''}) {
     
     if(noValue(param.dataSource)){
-      throw new Error(`Echars(${name}) dataset must has dataSource`);
+      throw new Error(`Echars(${name}) config must has dataSource`);
     }
     
     mustHas.forEach(field => {
       if (noValue(param[field])) {
-        throw new Error(`Echars(${name}) dataset must has ${mustHas.join(',')}`);
+        throw new Error(`Echars(${name}) config must has ${mustHas.join(',')} fields`);
       }   
     });
 
@@ -85,14 +134,14 @@ export class EchartsTransformer extends DataSetTransformer {
       colors: transform.echarts.COLORS,
       itemColors: ':-',
       aggregate: transform.AGGREGATES.sum,
+      geomTypes,
       type: defaultType
     });
 
     if (typeof this._type === 'string') {
       const __type = this._type;
       this._type = () => __type;
-    }
-    
+    }   
   }
   
   _beforeOutput() {
@@ -108,7 +157,6 @@ export class EchartsTransformer extends DataSetTransformer {
     };
   }
 
-  
 }
 
 
