@@ -1,14 +1,48 @@
 import 'echarts/extension/bmap/bmap';
-import {echartsColors, EchartsTransformer, transform, noValue, mergeConfig, bmpReady} from './Utils';
+import {echartsColors, EchartsTransformer, transform, mergeConfig, blank} from './Utils';
 /*
   百度地图
  */
 
 // 地图全局配置
-transform.bmapConfig = transform.bmapConfig || {};
-transform.bmapDeclaredArea = transform.bmapDeclaredArea || {};
+(() => {
+  const echarts = transform.echarts;
+  
+  echarts.bmapConfig = echarts.bmapConfig || {};
+  echarts.bmapDeclaredArea = echarts.bmapDeclaredArea || {};
+  
+  echarts.optionExecutor('onBmapReady', function(onBmapReady, api,{executorModel}) {
+    if(executorModel._hasRunOnBmapReady){
+      return;
+    }
+    executorModel._hasRunOnBmapReady = true;
+    let bmapComponent = api.getModel().getComponent('bmap');
+    if(!bmapComponent){
+      onBmapReady(false);
+    } else {
+      onBmapReady(bmapComponent.getBMap());
+    }
+  });
+  
+})();
 
-const blank = () => {};
+export function addBmapBoundary(bmap, name, opts = {}) {
+  if(!bmap || !name || !global.BMap){
+    return;
+  }
+  const {Boundary, Point, Polygon} = global.BMap;
+  var bdary = new Boundary();
+  bdary.get(name, (result = {}) => {
+    if(!result.boundaries || !result.boundaries.length) {
+      return ;
+    }
+    const points = result.boundaries[0].split(';').map(llStr => {
+      const [lng,lat] = llStr.split(',');
+      return new Point(lng,lat);
+    });
+    bmap.addOverlay(new Polygon(points),opts);
+  });
+}
 
 export class BmapTransformer extends EchartsTransformer {
   _init (param = {}) {
@@ -43,14 +77,15 @@ export class BmapTransformer extends EchartsTransformer {
   }
   
   output() {
-    const {fields, allColors} = this._beforeOutput();  
-    const {enums, list} = super.output();
+    const {allColors} = this._beforeOutput();  
+    const {list} = super.output();
     let geomType = this._type(null);
     this._checkGeomType(geomType);
     const {_lngField, _latField, _valueField} = this;
     
     return {    
       bmap: this._bmapConfig,
+      executor:{},
       series:[{
         coordinateSystem: 'bmap',
         type: geomType,

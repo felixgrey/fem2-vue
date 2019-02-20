@@ -77,6 +77,7 @@ export class LbaTransformer extends EchartsTransformer {
     });
     
     return {
+      executor:{},
       color: allColors,
       legend:{
         data: seriesNames

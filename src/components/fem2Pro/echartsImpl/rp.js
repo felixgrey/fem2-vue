@@ -34,6 +34,7 @@ export class RpTransformer extends EchartsTransformer {
     this._checkGeomType(geomType);
     
     return {
+      executor:{},
       color: this._colors,
       legend:{
         data: enums[_nameField]

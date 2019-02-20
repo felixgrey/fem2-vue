@@ -1,36 +1,59 @@
-import echarts from 'echarts';
+import echarts,{getInstanceByDom} from 'echarts';
 import {transform, DataSetTransformer,  noValue} from '@/components/fem2/core/Data';
 export * from '@/components/fem2/core/Data';
 
-function _$femOnSetOption(opts = {}) {
-  if(!opts.$onSetOption) {
-    return;
-  }
-  setTimeout(() => {   
-    opts.$onSetOption(opts, this, !this._$notFemFirst);
-    this._$notFemFirst = true;
-  }); 
-}
+export const blank = () => {};
 
-const oldInit = echarts.init;
-echarts.init = function(dom, theme, opts){
-  const chart = oldInit.apply(this, [dom, theme, opts]);
-  chart._$femOnSetOption = _$femOnSetOption;
-  chart._$femOnSetOption(opts);
-  const oldSetOption = chart.setOption;
-  chart.setOption = function(option, notMerge, lazyUpdate) {
-    const result = oldSetOption.apply(this,[option, notMerge, lazyUpdate]);
-    chart._$femOnSetOption(opts);
-    return result;
+const femOptionExecutorData = {
+  clear: function(flag, echart) {
+    const option = echart.getOption();
+    option.executor.forEach(executor => executor.clear = false);
+    if(flag){
+      setTimeout(()=>{
+         echart.clear();
+         echart.setOption(option);
+      })
+    } 
   }
-  return chart;
-}
+};
+
+//const gradientColor = ['#f6efa6', '#d88273', '#bf444c'];
+transform.echarts = {
+  COLORS: [
+   '#c23531', '#2f4554', '#61a0a8', '#d48265', '#91c7ae', '#749f83',
+   '#ca8622', '#bda29a', '#6e7074', '#546570', '#c4ccd3'
+  ],
+  optionExecutor: (name, fun = blank) => {
+    femOptionExecutorData[name] = fun;
+  }
+};
+
+echarts.extendComponentModel({
+  type: 'executor',
+  defaultOption:{}
+});
+
+echarts.extendComponentView({
+  type:'executor',
+  render: function(executorModel, ecModel, api) {   
+    const option = executorModel.option || {};    
+    const echart = getInstanceByDom(api.getDom())
+    for(let name in option){
+      const exec = femOptionExecutorData[name] || blank;
+      exec(option[name], echart, {
+        option,
+        executorModel,
+        ecModel,
+        api
+      });
+    }
+  }
+});
 
 let _resolve;
-const bmpReady = new Promise((resolve) => {
+export const bmpApiReady = new Promise((resolve) => {
   _resolve = resolve;
 });
-export {bmpReady};
 
 Object.defineProperty(transform, 'bmapAK',{
   set:function(bmapAK) {
@@ -70,10 +93,6 @@ export function mergeConfig(obj ={}, cfg = {}, defaultValue = {}) {
   
   return obj;
 }
-
-transform.echarts = {
-  COLORS: ['#c23531', '#2f4554', '#61a0a8', '#d48265', '#91c7ae','#749f83', '#ca8622', '#bda29a','#6e7074', '#546570', '#c4ccd3'],
-};
 
 export function echartsColors(current  = 'rgba(0,0,0,1)', param = {}) {
   return function (colorPattern, extend = {}) {

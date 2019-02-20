@@ -10,14 +10,13 @@ export * from './sg.js';// 桑基图 关系图
 export * from './ts.js'; // 树图 矩形树图 旭日图
 export * from './bmap.js'; // 百度地图
 
-
 // 百度地图API版本，默认3.0
 // transform.bmapVersion = '3.0'; 
 
 // 详情参考  https://github.com/apache/incubator-echarts/tree/master/extension/bmap
 transform.bmapConfig = { 
     // 百度地图中心经纬度
-    center: [120.13066322374, 30.240018034923],
+    center: '沈阳市',
     // 百度地图缩放
     zoom: 14,
     // 是否开启拖拽缩放，可以只设置 'scale' 或者 'move'

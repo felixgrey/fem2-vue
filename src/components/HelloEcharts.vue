@@ -7,7 +7,7 @@
 
 <script>
 /* eslint-disable */
-import {transform, bmpReady} from '@/components/fem2Pro';
+import {transform, bmpApiReady, addBmapBoundary } from '@/components/fem2Pro';
 
 // 全局配置色彩列表
 transform.echarts.COLORS = ["#26cdd8", '#3786ff', "#eec800", '#f5626f', '#9879ee'];
@@ -108,20 +108,40 @@ let mapOption = transform.echarts.bmapOption({
 	type: 'scatter',
 });
 
-lbaOption.$onSetOption = (option, chart, map, first) => {
-	console.log(`图表${first ? '是': '不是'}第一次执行setOption`, option, chart);
-};
-
-rpOption.$onSetOption = (option, chart, first) => {
-	console.log(`图表${first ? '是': '不是'}第一次执行setOption`, option, chart);
-};
-
-// option新增配置项$onSetOption,在执行setOption之后执行此方法
-mapOption.$onSetOption = (option, chart, first) => {
-	console.log(`图表${first ? '是': '不是'}第一次执行setOption`, option, chart);
-};
-
 chartOption = mapOption;
+
+// option新增配置option.executor，可以自定义函数满足业务需求,相当于简化的echarts组件
+
+// 注册option.executor方法,后几个参数参考echarts组件扩展相关文档, 该方法将在echarts初始化或执行setOption后执行
+transform.echarts.optionExecutor('demoExecutor', (fun, api, femModel, ecModel, option) => {
+  fun('演示executor用法');
+});
+
+function hiddenYouKnowWhat(bmap){
+	// 不显示地图、LOGO、版权信息，背景透明
+	const styleNode = document.createElement('style');
+	styleNode.innerHTML = `.ec-extension-bmap .anchorBL,.ec-extension-bmap img{display:none};`;
+	document.head.appendChild(styleNode);
+	bmap.getContainer().style.backgroundColor = 'transparent';
+}
+
+chartOption.executor = {
+//	clear: true,
+	// 百度地图的executor
+	onBmapReady: (bmap) => { // 如果存在使用百度地图的series，则返回百度地图对象，否则返回false， 只执行一次
+		if(bmap){
+			bmap.centerAndZoom('沈阳市', 10);
+			
+			// hiddenYouKnowWhat(bmap);
+			
+			// 添加行政区划
+			addBmapBoundary(bmap, '沈阳市和平区');
+		}
+	},
+	demoExecutor: (value) => { // option.executor演示
+		console.log(`demoExecutor`, value);
+	}
+}
 
 //echarts配置
 //console.log(chartOption);
@@ -145,7 +165,7 @@ export default {
 		}
 		
 		// 地图图表必须在地图API加载完成后配置
-		bmpReady.then(() => {
+		bmpApiReady.then(() => {
 			this.chartOption = mapOption;
 //			this.chartOption = testLbaOption();
 		});
@@ -173,7 +193,9 @@ export default {
 //		        x: 'center'
 //		    };
 //			this.chartOption = chartOption;
-			this.chartOption = testLbaOption();
+//			let _op = testLbaOption();
+//			_op.executor.clear = true;
+//			this.chartOption = _op;
 		}, 5000);
 	}
 }
