@@ -14,7 +14,7 @@ transform.echarts.optionExecutor('onBmapReady', function(onBmapReady, echart,{ex
   if(!bmapComponent){
     onBmapReady(false);
   } else {
-    onBmapReady(bmapComponent.getBMap());
+    onBmapReady(bmapComponent.getBMap(), echart);
   }
 });
 

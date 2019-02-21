@@ -45,28 +45,36 @@ const styleNode = document.createElement('style');
 styleNode.innerHTML = `.hidden-you-know-what-bmap-1 .anchorBL,.hidden-you-know-what-bmap-2 img{display:none};`;
 document.head.appendChild(styleNode);
 
-function hiddenYouKnowWhat(bmap, logo = false, img = false) {
+function hiddenYouKnowWhat(bmap, copyright = false, img = false) {
   const dom = bmap.getContainer();
-  dom.style.backgroundColor = 'transparent';
-  
-  if(logo) {
-  	dom.className = dom.className.replace(' hidden-you-know-what-bmap-1 ') + ' hidden-you-know-what-bmap-1 ';
+  dom.style.backgroundColor = 'transparent'; 
+  dom.className = dom.className.replace(' hidden-you-know-what-bmap-1 ', '').replace(' hidden-you-know-what-bmap-2 ', '');
+  if(copyright) {
+  	dom.className = dom.className + ' hidden-you-know-what-bmap-1 ';
   }
-  
   if(img) {
-  	dom.className = dom.className.replace(' hidden-you-know-what-bmap-2 ') + ' hidden-you-know-what-bmap-2 ';
+  	dom.className = dom.className + ' hidden-you-know-what-bmap-2 ';
   }
 }
 
+// 扩展配置
 chartOption.executor = {
-	// echart第一次渲染完成时执行
-	onEChartReady: (echart) => {
+	// echart第一次渲染完成时执行,返回echart对象
+	onEChartReady: (echart) => {		
+//		echart.on('click', (e) => { // echart点击事件
+//			console.log(e)
+//		})
 //		console.log(echart)
 	},
   // 如果存在使用百度地图的series，则返回百度地图对象，否则返回false， 只执行一次
-  onBmapReady: (bmap) => {
+  onBmapReady: (bmap, echart) => {
     if(bmap){
       hiddenYouKnowWhat(bmap, true, true);
+      
+      echart.on('click', (e) => { // echart点击事件
+      	const [lng,lat,_, {_items}] = e.data;
+				// bmap.openInfoWindow(new BMap.InfoWindow(_items[0].hospital,{width:100, height: 40}), new BMap.Point(lng,lat))
+			})
 
       syDistricts.forEach(name => {
       	// 添加行政区划
@@ -76,7 +84,7 @@ chartOption.executor = {
         	fillOpacity: 0.5,
         	strokeColor: "#ffffff", 
         	fillColor: districtColors[name] || "#ffffff"
-        }).then((pg) => { // 可能需要异步获取数据，采用Promise模式
+        }).then((pg) => { // 可能需要异步获取数据，所以采用Promise模式
         	if(pg) { //如果获取行政区域数据失败，返回null
         		pg.addEventListener('click', (e) => { // 因为有echarts遮挡，所以在这里监听事件没用。。。
         			console.log(e)
