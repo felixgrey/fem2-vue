@@ -1,19 +1,20 @@
 <template>
   <div id="app">
     <HelloEcharts />
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <HelloStore msg="Welcome to Your Vue.js App"/>
   </div>
 </template>
 
 <script>
-import HelloEcharts from './components/HelloEcharts.vue';
-import HelloWorld from './components/HelloWorld.vue';
+import HelloEcharts from './components/business/pages/echarts/HelloEcharts.vue';
+import HelloStore from './components/business/pages/store/HelloStore.vue';
+import './appConfig.js';
 //import './components/helloData';
 
 export default {
   name: 'app',
   components: {
-    HelloWorld,
+    HelloStore,
     HelloEcharts
   }
 }

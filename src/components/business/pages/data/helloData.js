@@ -1,5 +1,5 @@
 /* eslint-disable */
-import {transform} from '@/components/fem2';
+import {transform} from '@/components/common/fem2';
 
 const {
   AGGREGATES,  // 自带的聚合函数

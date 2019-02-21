@@ -1,4 +1,4 @@
-import {manager, Agent, localBaseUrl} from '@/components/fem2';
+import {manager, Agent, localBaseUrl} from '@/components/common/fem2';
 /* eslint-disable */
 
 manager.executor('a.b.c', async function({d,f}){
