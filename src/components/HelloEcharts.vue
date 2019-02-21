@@ -7,7 +7,7 @@
 
 <script>
 /* eslint-disable */
-import {transform, bmpApiReady, addBmapBoundary } from '@/components/fem2Pro';
+import {transform, bmpApiReady, addBmapBoundary } from '@/components/fem2DataVisualization';
 
 // 全局配置色彩列表
 transform.echarts.COLORS = ["#26cdd8", '#3786ff', "#eec800", '#f5626f', '#9879ee'];
@@ -155,19 +155,19 @@ export default {
 	data () {
 		return {
 			refresh: '没有刷新',
-			chartOption: null
+			chartOption: lbaOption
 		}
 	},
 	mounted(){
 		
-		if(chartOption !== mapOption){
-			this.chartOption = chartOption;
-		}
-		
+//		if(chartOption !== mapOption){
+//			this.chartOption = chartOption;
+//		}
+		this.chartOption = testLbaOption();
 		// 地图图表必须在地图API加载完成后配置
 		bmpApiReady.then(() => {
 			this.chartOption = mapOption;
-//			this.chartOption = testLbaOption();
+			
 		});
 
 		setTimeout(() => {
@@ -193,9 +193,9 @@ export default {
 //		        x: 'center'
 //		    };
 //			this.chartOption = chartOption;
-//			let _op = testLbaOption();
+			let _op = testLbaOption();
 //			_op.executor.clear = true;
-//			this.chartOption = _op;
+			this.chartOption = _op;
 		}, 5000);
 	}
 }

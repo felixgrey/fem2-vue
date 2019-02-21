@@ -1,10 +1,8 @@
-import echarts,{getInstanceByDom} from 'echarts';
-import {transform, DataSetTransformer,  noValue} from '@/components/fem2/core/Data';
-export * from '@/components/fem2/core/Data';
+import echarts, {getInstanceByDom} from 'echarts';
+import {transform, DataSetTransformer, noValue, mergeConfig, blank} from '../../core';
+export * from '../../core';
 
-export const blank = () => {};
-
-const femOptionExecutorData = {
+const _optionExecutorData = {
   clear: function(flag, echart) {
     const option = echart.getOption();
     option.executor.forEach(executor => executor.clear = false);
@@ -24,7 +22,7 @@ transform.echarts = {
    '#ca8622', '#bda29a', '#6e7074', '#546570', '#c4ccd3'
   ],
   optionExecutor: (name, fun = blank) => {
-    femOptionExecutorData[name] = fun;
+    _optionExecutorData[name] = fun;
   }
 };
 
@@ -39,7 +37,7 @@ echarts.extendComponentView({
     const option = executorModel.option || {};    
     const echart = getInstanceByDom(api.getDom())
     for(let name in option){
-      const exec = femOptionExecutorData[name] || blank;
+      const exec = _optionExecutorData[name] || blank;
       exec(option[name], echart, {
         option,
         executorModel,
@@ -49,50 +47,6 @@ echarts.extendComponentView({
     }
   }
 });
-
-let _resolve;
-export const bmpApiReady = new Promise((resolve) => {
-  _resolve = resolve;
-});
-
-Object.defineProperty(transform, 'bmapAK',{
-  set:function(bmapAK) {
-    const {bmapVersion = '3.0'} = transform;
-    if(!bmapAK) {
-      throw new Error('must set bmapAK first');
-    }
-    
-    const callbackName =`_runBmapReady${Date.now()}` ;
-    global[callbackName] = function() {
-      _resolve(global.BMap);
-    };
-    
-    const {document, location} = global;
-    const scriptDom = document.createElement('script');
-    scriptDom.setAttribute('type', 'text/javascript');
-    scriptDom.setAttribute('src', `${location.protocol}//api.map.baidu.com/api?v=${bmapVersion}&ak=${bmapAK}&callback=${callbackName}`);   
-    document.head.appendChild(scriptDom);
-
-  }
-});
-
-export function mergeConfig(obj ={}, cfg = {}, defaultValue = {}) {
-  for (let name in cfg) {
-    const _name = `_${name}`;
-    if(obj[_name] === undefined) {
-      obj[_name] = cfg[name] === undefined ? defaultValue[name] : cfg[name];
-    }
-  }
-  
-  for (let name in defaultValue) {
-    const _name = `_${name}`;
-    if(obj[_name] === undefined) {
-      obj[_name] = defaultValue[name];
-    }
-  }
-  
-  return obj;
-}
 
 export function echartsColors(current  = 'rgba(0,0,0,1)', param = {}) {
   return function (colorPattern, extend = {}) {
@@ -158,7 +112,7 @@ export function echartsColors(current  = 'rgba(0,0,0,1)', param = {}) {
 
 export class EchartsTransformer extends DataSetTransformer {
   _checkGeomType(geomType) {
-    return new RegExp(geomType,'g').test(this._geomTypes);
+    return new RegExp(geomType, 'g').test(this._geomTypes);
   }
   
   _beforeInit(param = {}, {defaultType, mustHas = [] , name = '', geomTypes = ''}) {

@@ -10,7 +10,7 @@
 
 <script>
 /* eslint-disable */
-import {manager, Store, Agent, blank} from '@/components/fem2Pro';
+import {manager, Store, Agent, blank} from '@/components/fem2';
 
 //console.log(manager);
 

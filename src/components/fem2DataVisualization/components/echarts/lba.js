@@ -1,5 +1,4 @@
-import {echartsColors, EchartsTransformer} from './Utils';
-import {transform, mergeConfig} from '@/components/fem2';
+import {echartsColors, EchartsTransformer, transform, mergeConfig} from './Utils';
 /*
   折线 条形 区域
  */

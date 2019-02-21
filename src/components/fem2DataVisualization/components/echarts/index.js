@@ -16,7 +16,7 @@ export * from './bmap.js'; // 百度地图
 // 详情参考  https://github.com/apache/incubator-echarts/tree/master/extension/bmap
 transform.bmapConfig = { 
     // 百度地图中心经纬度
-    center: '沈阳市',
+    center: [123.442763, 41.791087], // 沈阳市
     // 百度地图缩放
     zoom: 14,
     // 是否开启拖拽缩放，可以只设置 'scale' 或者 'move'
