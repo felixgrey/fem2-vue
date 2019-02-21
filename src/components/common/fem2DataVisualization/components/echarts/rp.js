@@ -42,10 +42,10 @@ export class RpTransformer extends EchartsTransformer {
       series:[{
         type: geomType,
         itemStyle:{
-          color: (param)=> {
-            const {dataIndex} = param;
+          color: (...args)=> {
+            const {dataIndex} = args[0];
             const current = allColors[dataIndex % allColors.length];
-            return echartsColors(current, param)(this._itemColors);
+            return echartsColors(current, list[dataIndex], args)(this._itemColors);
           }  
         },
         data: list.map(item => ({name: item[_nameField], value:item[_valueField]}))

@@ -12,7 +12,7 @@ transform.echarts.optionExecutor('onBmapReady', function(onBmapReady, echart,{ex
   executorModel._hasRunOnBmapReady = true;
   let bmapComponent = echart.getModel().getComponent('bmap');
   if(!bmapComponent){
-    onBmapReady(false);
+    onBmapReady(null);
   } else {
     onBmapReady(bmapComponent.getBMap(), echart);
   }
@@ -24,13 +24,13 @@ transform.echarts.nextMapOptions = function(opt = {}){
 }
 
 bmpApiReady.then(() => {
-  const _Map = BMap.Map;
-  BMap.Map = function (dom, opts){
+  const _Map = global.BMap.Map;
+  global.BMap.Map = function (dom, opts){
     if(dom && dom.className === 'ec-extension-bmap' && !opts){
-      opts = _nextMapOptions
+      opts = _nextMapOptions;
       _nextMapOptions = {};
     }
-    return new _Map(dom,opts)
+    return new _Map(dom, opts);
   }
 })
 

@@ -35,12 +35,20 @@ export class LbaTransformer extends EchartsTransformer {
     const {fields, allColors} = this._beforeOutput();
     const stack = this._stack ? this._yAxisField : false;
     const seriesNames = fields[this._seriesField] || [null];
-  
+    const list = [];
     const _seriesData = Array.from(this._data.keys()).map(key => this._data.get(key));  
     const getSeriesData = this._seriesField ? (name) => {
-      return _seriesData.map(dataMap => dataMap.get(name).get(this._yAxisField))
+      return _seriesData.map(dataMap => {
+        const item = dataMap.get(name).toObject();
+        list.push(item);
+        return item[this._yAxisField];
+      })
     } : () => {
-      return _seriesData.map(dataMap => dataMap.get(this._yAxisField)) 
+      return _seriesData.map(dataMap => {
+        const item = dataMap.toObject();
+        list.push(item);
+        return item[this._yAxisField];
+      })
     };
     
     const series = seriesNames.map((name, index) => {  
@@ -53,16 +61,18 @@ export class LbaTransformer extends EchartsTransformer {
       let areaColor = 'transparent';
       if (isArea) {
         geomType = 'line';
-        areaColor = (param) => {
-          return echartsColors(current, param)(this._areaColors)
+        areaColor = (...args) => {
+          const {dataIndex} = args[0];
+          return echartsColors(current, list[dataIndex], args)(this._areaColors)
         }
       }
 
       return {
         name,
         itemStyle:{
-          color: (param) => {
-            return echartsColors(current, param)(this._itemColors)
+          color: (...args) => {
+            const {dataIndex} = args[0];
+            return echartsColors(current, list[dataIndex], args)(this._itemColors);
           }    
         },
         areaStyle:{

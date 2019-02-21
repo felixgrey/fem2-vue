@@ -145,7 +145,7 @@ export class EchartsTransformer extends DataSetTransformer {
 
     let originName = this._originAs;
     if (originName !== false) {
-      originName = originName === true ? '_item': originName;
+      originName = noValue(originName) ? '_item': originName;
       config.aggregate[originName] = originItem;
       config.valueFields.push(originName);
     }

@@ -77,6 +77,17 @@ export class DataMap extends Map {
   }
   
   /*
+     转成普通的Objec
+   */
+  toObject() {
+    const obj = {};
+    for (let [key, value] of this.entries()) {
+      obj[key] = value;
+    }
+    return obj;
+  }
+  
+  /*
      遍历数据并转为对象数组格式
   */
   toObjectInArray(_param = {_list: [], _item: {}}) {

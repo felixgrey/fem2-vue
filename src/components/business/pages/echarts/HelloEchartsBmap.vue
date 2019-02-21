@@ -25,13 +25,12 @@ for (let i = 0 ; i < 8; i++) {
 
 let chartOption = transform.echarts.bmapOption({
   dataSource: data,
-//keyFieldAs: ['id', '_ids'], // 将聚合前的主键以数组形式保存到某个字段 格式 [主键:字段名]
   originAs:'_items', // 将聚合前的数据以数组形式保存到某个字段
   lngField: 'lng',
   latField: 'lat',
   valueField: 'events',
   itemColors:(item, current, args) => {
-		console.log(item._items[0].hospital);
+//		console.log(item._items[0].hospital);
   	return '#fdd300';
   },
   symbolSize:(item, args) => {
@@ -41,6 +40,7 @@ let chartOption = transform.echarts.bmapOption({
   type: 'effectScatter',
 });
 
+// 新增样式
 const styleNode = document.createElement('style');
 styleNode.innerHTML = `.hidden-you-know-what-bmap-1 .anchorBL,.hidden-you-know-what-bmap-2 img{display:none};`;
 document.head.appendChild(styleNode);
@@ -66,13 +66,13 @@ chartOption.executor = {
 //		})
 //		console.log(echart)
 	},
-  // 如果存在使用百度地图的series，则返回百度地图对象，否则返回false， 只执行一次
+  // 如果存在使用百度地图的series，则返回百度地图对象，否则返回null， 只执行一次
   onBmapReady: (bmap, echart) => {
     if(bmap){
       hiddenYouKnowWhat(bmap, true, true);
       
       echart.on('click', (e) => { // echart点击事件
-      	const [lng,lat,_, {_items}] = e.data;
+      	const [lng, lat ,, {_items}] = e.data;
 				// bmap.openInfoWindow(new BMap.InfoWindow(_items[0].hospital,{width:100, height: 40}), new BMap.Point(lng,lat))
 			})
 
@@ -92,7 +92,6 @@ chartOption.executor = {
         	}
         });
       });
-
     }
   }
 }
