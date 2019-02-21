@@ -38,7 +38,7 @@ Object.defineProperty(transform.bmap, 'bmapAK',{
 
 export function addBmapBoundary(bmap, name, opts = {}) {
   if(!bmap || !name || !global.BMap){
-    return;
+    return Promise.resolve(null);
   }
   const {Boundary, Point, Polygon} = global.BMap;
   
@@ -48,31 +48,25 @@ export function addBmapBoundary(bmap, name, opts = {}) {
     const pg = new Polygon(points, opts);
 
     bmap.addOverlay(pg);
-//  if (opts.$title) {
-//    setTimeout(() => {
-//      pg.V.title = opts.$title;
-//    }, 20);
-//  }
-    return;
+    return Promise.resolve(pg);
   }
-
-  new Boundary().get(name, (result = {}) => {
-    if(!result.boundaries || !result.boundaries.length) {
-      return ;
-    }
-    const points = result.boundaries[0].split(';').map(llStr => {
-      const [lng, lat] = llStr.split(',');
-      return new Point(lng, lat);
+  
+  return new Promise((resolve)=>{
+    new Boundary().get(name, (result = {}) => {
+      if(!result.boundaries || !result.boundaries.length) {
+        return ;
+      }
+      const points = result.boundaries[0].split(';').map(llStr => {
+        const [lng, lat] = llStr.split(',');
+        return new Point(lng, lat);
+      });
+      const pg = new Polygon(points, opts);
+      bmap.addOverlay(pg);
+      resolve(pg);
     });
-    const pg = new Polygon(points, opts);
-    
-    bmap.addOverlay(pg);
-//  if (opts.$title) {
-//    setTimeout(() => {
-//      pg.V.title = opts.$title;
-//    }, 20);
-//  }
   });
+
+  
 }
 
 

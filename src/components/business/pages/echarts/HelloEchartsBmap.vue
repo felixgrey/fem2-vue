@@ -42,7 +42,7 @@ let chartOption = transform.echarts.bmapOption({
 });
 
 const styleNode = document.createElement('style');
-styleNode.innerHTML = `.hidden-you-know-what-bmap-1 .anchorBL,.hidden-you-know-what-bmap-2 img{display:none};svg{};`;
+styleNode.innerHTML = `.hidden-you-know-what-bmap-1 .anchorBL,.hidden-you-know-what-bmap-2 img{display:none};`;
 document.head.appendChild(styleNode);
 
 function hiddenYouKnowWhat(bmap, logo = false, img = false) {
@@ -59,11 +59,15 @@ function hiddenYouKnowWhat(bmap, logo = false, img = false) {
 }
 
 chartOption.executor = {
+	// echart第一次渲染完成时执行
+	onEChartReady: (echart) => {
+//		console.log(echart)
+	},
   // 如果存在使用百度地图的series，则返回百度地图对象，否则返回false， 只执行一次
   onBmapReady: (bmap) => {
     if(bmap){
       hiddenYouKnowWhat(bmap, true, true);
-      
+
       syDistricts.forEach(name => {
       	// 添加行政区划
         addBmapBoundary(bmap, name, {
@@ -72,6 +76,12 @@ chartOption.executor = {
         	fillOpacity: 0.5,
         	strokeColor: "#ffffff", 
         	fillColor: districtColors[name] || "#ffffff"
+        }).then((pg) => { // 可能需要异步获取数据，采用Promise模式
+        	if(pg) { //如果获取行政区域数据失败，返回null
+        		pg.addEventListener('click', (e) => { // 因为有echarts遮挡，所以在这里监听事件没用。。。
+        			console.log(e)
+        		})
+        	}
         });
       });
 
@@ -88,8 +98,12 @@ export default {
   mounted(){
     // 地图图表必须在地图API加载完成后配置
     bmpApiReady.then(() => {
+    	
+ 			//下一次渲染echarts的百度地图的配置信息，因为封装缘故，采用此方法设置初始化信息
+    	transform.echarts.nextMapOptions({
+    		enableMapClick: false // 不可点击
+    	});
       this.chartOption = chartOption;
-      
     });
   }
 }

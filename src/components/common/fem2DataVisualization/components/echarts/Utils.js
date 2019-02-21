@@ -12,8 +12,17 @@ const _optionExecutorData = {
          echart.setOption(option);
       })
     } 
+  },
+  onEChartReady: function(onEChartReady, echart, {executorModel}) {
+    if(executorModel._hasRunOnEChartReady){
+      return;
+    }
+    executorModel._hasRunOnEChartReady = true;
+    onEChartReady(echart);
   }
 };
+
+
 
 
 //const gradientColor = ['#f6efa6', '#d88273', '#bf444c'];
@@ -111,15 +120,7 @@ export function echartsColors(current  = 'rgba(0,0,0,1)', item = null, args = []
   };  
 }
 
-function keyFieldAs(key) {
-  return ({value, item}) => {
-    value = value || [];
-    value.push(item[key]);
-    return value;
-  };
-}
-
-function originAs({value, item}) {
+export function originItem({value, item}) {
   value = value || [];
   value.push(item);
   return value;
@@ -137,20 +138,15 @@ export class EchartsTransformer extends DataSetTransformer {
   }
   
   _beforeConfig(_config){      
-    const config = Object.assign({}, this._optionTemplate, _config);
+    const config = Object.assign({
+        aggregate: {},
+        valueFields: []
+      }, this._optionTemplate, _config);
 
-    config.aggregate = config.aggregate || {};
-    config.valueFields = config.valueFields || [];
-    
-    if (this._keyFieldAs) {
-      const [key, newKey = `_${key}s`] = [].concat(this._keyFieldAs);
-      config.aggregate[newKey] = keyFieldAs(key);
-      config.valueFields.push(newKey);
-    }
-    
-    const originName = this._originAs;
-    if (originName) {
-      config.aggregate[originName] = originAs;
+    let originName = this._originAs;
+    if (originName !== false) {
+      originName = originName === true ? '_item': originName;
+      config.aggregate[originName] = originItem;
       config.valueFields.push(originName);
     }
 
