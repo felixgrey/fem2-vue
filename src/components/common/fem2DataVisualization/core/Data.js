@@ -152,6 +152,9 @@ export class DataSetTransformer {
     
     this._aggregate = {};
     this._valueFields.forEach(field => {
+      if (typeof aggregate[field] === 'string') {
+        aggregate[field] = _AGGREGATES[aggregate[field]];
+      }
       this._aggregate[field] = aggregate[field] || _AGGREGATES['sum'];
     });
 

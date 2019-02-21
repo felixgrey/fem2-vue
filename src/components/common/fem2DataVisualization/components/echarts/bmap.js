@@ -1,55 +1,29 @@
 import 'echarts/extension/bmap/bmap';
+import './bmap';
 import {echartsColors, EchartsTransformer, transform, mergeConfig, blank} from './Utils';
+
 /*
   百度地图
  */
-
-// 地图全局配置
-(() => {
-  const echarts = transform.echarts;
-  
-  echarts.bmapConfig = echarts.bmapConfig || {};
-  echarts.bmapDeclaredArea = echarts.bmapDeclaredArea || {};
-  
-  echarts.optionExecutor('onBmapReady', function(onBmapReady, api,{executorModel}) {
-    if(executorModel._hasRunOnBmapReady){
-      return;
-    }
-    executorModel._hasRunOnBmapReady = true;
-    let bmapComponent = api.getModel().getComponent('bmap');
-    if(!bmapComponent){
-      onBmapReady(false);
-    } else {
-      onBmapReady(bmapComponent.getBMap());
-    }
-  });
-  
-})();
-
-export function addBmapBoundary(bmap, name, opts = {}) {
-  if(!bmap || !name || !global.BMap){
+transform.echarts.optionExecutor('onBmapReady', function(onBmapReady, api,{executorModel}) {
+  if(executorModel._hasRunOnBmapReady){
     return;
   }
-  const {Boundary, Point, Polygon} = global.BMap;
-  var bdary = new Boundary();
-  bdary.get(name, (result = {}) => {
-    if(!result.boundaries || !result.boundaries.length) {
-      return ;
-    }
-    const points = result.boundaries[0].split(';').map(llStr => {
-      const [lng,lat] = llStr.split(',');
-      return new Point(lng,lat);
-    });
-    bmap.addOverlay(new Polygon(points),opts);
-  });
-}
+  executorModel._hasRunOnBmapReady = true;
+  let bmapComponent = api.getModel().getComponent('bmap');
+  if(!bmapComponent){
+    onBmapReady(false);
+  } else {
+    onBmapReady(bmapComponent.getBMap());
+  }
+});
 
 export class BmapTransformer extends EchartsTransformer {
   _init (param = {}) {
     this._beforeInit(param, {
       defaultType: 'scatter',
       name:'bmap',
-      geomTypes: '^scatter$|^heat$',
+      geomTypes: '^scatter$|^heat$|^effectScatter$',
       mustHas: ['lngField', 'latField', 'valueField']
     });
     
@@ -57,21 +31,26 @@ export class BmapTransformer extends EchartsTransformer {
     
     mergeConfig(this, param, {
       middleLayer: null,
-      mapSize: null,
+      symbolSize: 10,
       mapColor: null,
       onMapInit: blank,
       afterSetOption: blank,
-      bmapConfig: Object.assign(bmapConfig, transform.bmapConfig)
+      bmapConfig: Object.assign(bmapConfig, transform.bmap.bmapConfig)
     });
     
-    const config = {
+    if(typeof this._symbolSize === 'number') {
+      const __symbolSize = this._symbolSize;
+      this._symbolSize = () => __symbolSize;
+    }
+    
+    const config = this._beforeConfig({
       dataSource,
       aggregate:{
         [valueField]: this._aggregate
       },
       groupFields: [lngField, latField],
       valueFields: [valueField]
-    };
+    });
 
     return super._init(config);
   }
@@ -82,18 +61,21 @@ export class BmapTransformer extends EchartsTransformer {
     let geomType = this._type(null);
     this._checkGeomType(geomType);
     const {_lngField, _latField, _valueField} = this;
-    
     return {    
       bmap: this._bmapConfig,
       executor:{},
       series:[{
         coordinateSystem: 'bmap',
         type: geomType,
+        symbolSize:(...args) => {
+          const item = args[0][3];
+          return this._symbolSize(item, args);
+        },
         itemStyle:{
-          color: (param)=> {
-            const {dataIndex} = param;
+          color: (...args)=> {
+            const {dataIndex} = args[0];
             const current = allColors[dataIndex % allColors.length];
-            return echartsColors(current, param)(this._itemColors);
+            return echartsColors(current, list[dataIndex], args)(this._itemColors);
           }  
         },
         data: list.map(item => [item[_lngField], item[_latField], item[_valueField], item])
@@ -102,8 +84,8 @@ export class BmapTransformer extends EchartsTransformer {
   }
 }
 
-transform.echarts.bmapOption = function(param = {}) {
-  return new BmapTransformer(param).output();
+transform.echarts.bmapOption = function(param = {}, optionTemplate = {}) {
+  return new BmapTransformer(param, optionTemplate).output();
 }
 
 

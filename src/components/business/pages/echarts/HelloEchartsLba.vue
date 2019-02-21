@@ -1,7 +1,6 @@
 <template>
 	<div>
-		<div>{{refresh}}</div>
-		<v-chart v-if="chartOption" :options="chartOption"/>
+		<v-chart style="width:1200px;height:800px" v-if="chartOption" :options="chartOption"/>
 	</div>
 </template>
 

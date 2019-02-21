@@ -19,14 +19,14 @@ export class LbaTransformer extends EchartsTransformer {
       areaColors: ':-'
     });
 
-    const config = {
+    const config = this._beforeConfig({
       dataSource,
       aggregate:{
         [yAxisField]: this._aggregate
       },
       groupFields: [xAxisField, ...(seriesField ? [seriesField] : [])],
       valueFields: [yAxisField]
-    };
+    });
 
     return super._init(config);  
   }
@@ -93,6 +93,6 @@ export class LbaTransformer extends EchartsTransformer {
   }
 }
 
-transform.echarts.lbaOption = function(param = {}) {
-  return new LbaTransformer(param).output();
+transform.echarts.lbaOption = function(param = {}, optionTemplate = {}) {
+  return new LbaTransformer(param, optionTemplate).output();
 }

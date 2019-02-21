@@ -1,5 +1,4 @@
-import '../vueImpl';
-
-export * from './core/Data';
+export * from './core';
 export * from './components/echarts';
-
+export * from './components/bmap';
+export * from './components/handsontable';

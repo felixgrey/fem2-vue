@@ -1,14 +1,15 @@
 import Vue from 'vue';
-import ECharts from 'vue-echarts';
 import $ from 'jquery';
-import { Agent, monkey, blank} from '@/components/common/fem2/core/Agent';
-
 import BootstrapVue from 'bootstrap-vue';
 import 'bootstrap/dist/css/bootstrap.css';
 import 'bootstrap-vue/dist/bootstrap-vue.css';
+import ECharts from 'vue-echarts';
+import { Agent, monkey, blank} from '@/components/common/fem2';
+export * from '@/components/common/fem2';
+export * from '@/components/common/fem2DataVisualization';
 
-Vue.component('v-chart', ECharts);
 Vue.use(BootstrapVue);
+Vue.component('v-chart', ECharts);
 
 // jquery实现事件发射器
 Agent.Emitter= class JqEvent {
@@ -131,8 +132,4 @@ Agent.ajax = function(url, data, option = {}){
 Agent.router = (path = '', option = {target: '_self'}) => {
   global.console.log(path, option);
 }
-
-export * from '@/components/common/fem2/core/Agent';
-
-
 

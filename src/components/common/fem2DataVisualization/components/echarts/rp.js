@@ -14,14 +14,14 @@ export class RpTransformer extends EchartsTransformer {
     
     const {dataSource, nameField, valueField} = param;
     
-    const config = {
+    const config = this._beforeConfig({
       dataSource,
       aggregate: {
         [valueField]: this._aggregate
       },
       groupFields: [nameField],
       valueFields: [valueField]
-    };
+    });
 
     return super._init(config);
   }
@@ -55,7 +55,7 @@ export class RpTransformer extends EchartsTransformer {
   
 }
 
-transform.echarts.rpOption = function(param = {}) {
-  return new RpTransformer(param).output();
+transform.echarts.rpOption = function(param = {}, optionTemplate = {}) {
+  return new RpTransformer(param, optionTemplate).output();
 }
 

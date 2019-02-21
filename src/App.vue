@@ -1,21 +1,27 @@
 <template>
   <div id="app">
-    <HelloEcharts />
-    <HelloStore msg="Welcome to Your Vue.js App"/>
+    <HelloEchartsBmap v-if="HelloEchartsBmap" />
+    <HelloStore  v-if="HelloStore" msg="Welcome to Your Vue.js App"/>
   </div>
 </template>
 
 <script>
-import HelloEcharts from './components/business/pages/echarts/HelloEcharts.vue';
+import HelloEchartsBmap from './components/business/pages/echarts/HelloEchartsBmap.vue';
 import HelloStore from './components/business/pages/store/HelloStore.vue';
-import './appConfig.js';
+
 //import './components/helloData';
 
 export default {
   name: 'app',
+  data:function(){
+    return {
+      HelloEchartsBmap: true,
+      HelloStore: false,
+    }
+  },
   components: {
-    HelloStore,
-    HelloEcharts
+    HelloEchartsBmap,
+    HelloStore,  
   }
 }
 </script>

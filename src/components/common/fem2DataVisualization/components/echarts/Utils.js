@@ -15,6 +15,7 @@ const _optionExecutorData = {
   }
 };
 
+
 //const gradientColor = ['#f6efa6', '#d88273', '#bf444c'];
 transform.echarts = {
   COLORS: [
@@ -48,7 +49,7 @@ echarts.extendComponentView({
   }
 });
 
-export function echartsColors(current  = 'rgba(0,0,0,1)', param = {}) {
+export function echartsColors(current  = 'rgba(0,0,0,1)', item = null, args = []) {
   return function (colorPattern, extend = {}) {
     if (!colorPattern) {
       return 'transparent';
@@ -65,7 +66,7 @@ export function echartsColors(current  = 'rgba(0,0,0,1)', param = {}) {
     } = extend;
   
     if (typeof colorPattern === 'function') {
-      return colorPattern(current, param, echarts);
+      return colorPattern(item, current, args);
     } else if (Array.isArray(colorPattern)) {    
       extend = colorPattern[1];
       colorPattern = colorPattern[0];
@@ -110,9 +111,50 @@ export function echartsColors(current  = 'rgba(0,0,0,1)', param = {}) {
   };  
 }
 
+function keyFieldAs(key) {
+  return ({value, item}) => {
+    value = value || [];
+    value.push(item[key]);
+    return value;
+  };
+}
+
+function originAs({value, item}) {
+  value = value || [];
+  value.push(item);
+  return value;
+}
+
 export class EchartsTransformer extends DataSetTransformer {
+  
+  constructor(config = {}, optionTemplate = {}) {
+    super(config);
+    this._optionTemplate = optionTemplate;
+  }
+  
   _checkGeomType(geomType) {
     return new RegExp(geomType, 'g').test(this._geomTypes);
+  }
+  
+  _beforeConfig(_config){      
+    const config = Object.assign({}, this._optionTemplate, _config);
+
+    config.aggregate = config.aggregate || {};
+    config.valueFields = config.valueFields || [];
+    
+    if (this._keyFieldAs) {
+      const [key, newKey = `_${key}s`] = [].concat(this._keyFieldAs);
+      config.aggregate[newKey] = keyFieldAs(key);
+      config.valueFields.push(newKey);
+    }
+    
+    const originName = this._originAs;
+    if (originName) {
+      config.aggregate[originName] = originAs;
+      config.valueFields.push(originName);
+    }
+
+    return config;
   }
   
   _beforeInit(param = {}, {defaultType, mustHas = [] , name = '', geomTypes = ''}) {
