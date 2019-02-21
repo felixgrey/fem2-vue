@@ -1,6 +1,6 @@
 <template>
-	<div @click="onClick">
-		<v-chart style="width:1200px;height:800px" v-if="chartOption" :options="chartOption"/>
+	<div @click="onClick2">
+		<v-chart @click="onClick" style="width:1200px;height:800px" v-if="chartOption" :options="chartOption"/>
 	</div>
 </template>
 
@@ -31,6 +31,16 @@ let chartOption = transform.echarts.rpOption({
 	  return riskTypes[item.eventType];
 	}
 });
+
+chartOption.executor = {
+	// echart第一次渲染完成时执行,返回echart对象
+	onEChartReady: (echart) => {		
+//		console.log(echart.getOption())
+	},
+	onClickItem:(item) => {
+		console.log(item)
+	}
+}
 
 chartOption.legend = null;
 Object.assign(chartOption.series[0],{
@@ -64,8 +74,11 @@ export default {
 	},
 	methods:{
 		onClick: function(e){
-			console.log(e)
-		}
+//			console.log(e)
+		},
+		onClick2: function(e){
+//			console.log(e)
+		},
 	}
 }
 </script>

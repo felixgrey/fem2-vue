@@ -33,8 +33,13 @@ export class RpTransformer extends EchartsTransformer {
     const geomType = this._type(null);
     this._checkGeomType(geomType);
     
+    const _$getItem = (seriesIndex, dataIndex) => {
+      return list[dataIndex];
+    }
+    
     return {
-      executor:{},
+      executor: this._executor,
+      _$getItem,
       color: this._colors,
       legend:{
         data: enums[_nameField]

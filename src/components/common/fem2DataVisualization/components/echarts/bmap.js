@@ -77,9 +77,10 @@ export class BmapTransformer extends EchartsTransformer {
     let geomType = this._type(null);
     this._checkGeomType(geomType);
     const {_lngField, _latField, _valueField} = this;
+   
     return {    
       bmap: this._bmapConfig,
-      executor:{},
+      executor: this._executor,
       series:[{
         coordinateSystem: 'bmap',
         type: geomType,

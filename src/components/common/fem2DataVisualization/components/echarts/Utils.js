@@ -19,10 +19,22 @@ const _optionExecutorData = {
     }
     executorModel._hasRunOnEChartReady = true;
     onEChartReady(echart);
-  }
+  },
+  onClickItem: function(onClickItem, echart, {executorModel}) {
+    if(executorModel._hasRunOnClickItem) {
+      return;
+    }
+    executorModel._hasRunOnClickItem = true;
+    echart.on('click', (...args) => {
+      const {seriesIndex, dataIndex} = args[0];
+      let item = {};
+      if(echart.getOption()._$getItem){
+        item = echart.getOption()._$getItem(seriesIndex, dataIndex);
+      }
+      onClickItem(item, args)
+    })
+},
 };
-
-
 
 
 //const gradientColor = ['#f6efa6', '#d88273', '#bf444c'];
@@ -137,7 +149,7 @@ export class EchartsTransformer extends DataSetTransformer {
     return new RegExp(geomType, 'g').test(this._geomTypes);
   }
   
-  _beforeConfig(_config){      
+  _beforeConfig(_config){
     const config = Object.assign({
         aggregate: {},
         valueFields: []
@@ -170,6 +182,7 @@ export class EchartsTransformer extends DataSetTransformer {
       itemColors: ':-',
       aggregate: transform.AGGREGATES.sum,
       geomTypes,
+      executor: {},
       type: defaultType
     });
 

@@ -37,8 +37,9 @@ export class LbaTransformer extends EchartsTransformer {
     const seriesNames = fields[this._seriesField] || [null];
     const list = [];
     const _seriesData = Array.from(this._data.keys()).map(key => this._data.get(key));  
+    const dataCount = _seriesData.length;
     const getSeriesData = this._seriesField ? (name) => {
-      return _seriesData.map(dataMap => {
+      return _seriesData.map(dataMap => {       
         const item = dataMap.get(name).toObject();
         list.push(item);
         return item[this._yAxisField];
@@ -49,6 +50,11 @@ export class LbaTransformer extends EchartsTransformer {
         list.push(item);
         return item[this._yAxisField];
       })
+    };
+    
+    const _$getItem = (seriesIndex, dataIndex) => {
+      const index = seriesIndex * dataCount + dataIndex;
+      return list[index];
     };
     
     const series = seriesNames.map((name, index) => {  
@@ -62,8 +68,8 @@ export class LbaTransformer extends EchartsTransformer {
       if (isArea) {
         geomType = 'line';
         areaColor = (...args) => {
-          const {dataIndex} = args[0];
-          return echartsColors(current, list[dataIndex], args)(this._areaColors)
+          const {seriesIndex, dataIndex} = args[0];
+          return echartsColors(current, _$getItem(seriesIndex, dataIndex), args)(this._areaColors)
         }
       }
 
@@ -71,8 +77,8 @@ export class LbaTransformer extends EchartsTransformer {
         name,
         itemStyle:{
           color: (...args) => {
-            const {dataIndex} = args[0];
-            return echartsColors(current, list[dataIndex], args)(this._itemColors);
+            const {seriesIndex, dataIndex} = args[0];
+            return echartsColors(current, _$getItem(seriesIndex, dataIndex), args)(this._itemColors);
           }    
         },
         areaStyle:{
@@ -86,7 +92,8 @@ export class LbaTransformer extends EchartsTransformer {
     });
     
     return {
-      executor:{},
+      executor: this._executor,
+      _$getItem,
       color: allColors,
       legend:{
         data: seriesNames

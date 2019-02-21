@@ -70,14 +70,25 @@ function testLbaOption() {
 	    offsetTo: 1
 	  }], // 图形渐变色
 	  itemColors: (item, corrent, args) => {
-		console.log(item, corrent, args);
+//		console.log(item, corrent, args);
 		return corrent;
-	  } // 也可以直接写函数，返回颜色，current是按次序应该用的颜色
+	  }, // 也可以直接写函数，返回颜色，current是按次序应该用的颜色
+	  // 在echart实例setOption之后执行
+	  executor: {
+  		// echart第一次渲染完成时执行,返回echart对象
+		onEChartReady: (echart) => {		
+		//		console.log(echart.getOption())
+		},
+		onClickItem:(item) => {
+			console.log(item)
+		}
+	  }
 	});
 }
 
 
-let chartOption = testLbaOption();;
+let chartOption = testLbaOption();
+//let chartOption = null
 
 export default {
 	data () {
