@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-  	<HelloRp />
+    <HelloRp />
     <HelloEchartsLba/>
     <HelloEchartsBmap />
   </div>
@@ -15,7 +15,7 @@ import HelloEchartsLba from './components/business/pages/echarts/HelloEchartsLba
 import HelloRp from './components/business/pages/echarts/HelloRp.vue';
 
 /*
- 		<HelloEchartsLba/>
+    <HelloEchartsLba/>
     <HelloRp />
     <HelloEchartsBmap />
     <HelloStore  msg="Welcome to Your Vue.js App"/>

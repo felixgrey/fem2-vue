@@ -76,6 +76,16 @@ chartOption.executor = {
 //				// bmap.openInfoWindow(new BMap.InfoWindow(_items[0].hospital,{width:100, height: 40}), new BMap.Point(lng,lat))
 //			})
 
+			addBmapBoundary(bmap, '沈阳市', {
+        	strokeWeight: 2, 
+        	strokeOpacity: 0.8,
+        	fillOpacity: 0.5,
+        	strokeColor: "#ffffff", 
+        	fillColor: districtColors[name] || "#ffffff"
+        }).then((pg) => { 
+        	console.log(pg)
+        })
+
       syDistricts.forEach(name => {
       	// 添加行政区划
         addBmapBoundary(bmap, name, {

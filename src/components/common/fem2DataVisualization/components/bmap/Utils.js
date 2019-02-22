@@ -35,6 +35,23 @@ Object.defineProperty(transform.bmap, 'bmapAK',{
   }
 });
 
+export function getBmapBoundaryPeth(name) {
+  return new Promise((resolve,reject)=>{
+    new Boundary().get(name, (result = {}) => {
+      if(!result.boundaries || !result.boundaries.length) {
+        reject(null);
+        return ;
+      }
+      
+      const points = result.boundaries[0].split(';').map(llStr => {
+        return [lng, lat] = llStr.split(',');
+      });
+
+      resolve(points);
+    });
+  });
+}
+
 export function addBmapBoundary(bmap, name, opts = {}) {
   if(!bmap || !name || !global.BMap){
     return Promise.resolve(null);
@@ -42,6 +59,7 @@ export function addBmapBoundary(bmap, name, opts = {}) {
   const {Boundary, Point, Polygon} = global.BMap;
   
   let path = transform.bmap.districts[name];
+
   if (path) {  
     const points = path.map(([lng, lat]) => new Point(lng, lat));   
     const pg = new Polygon(points, opts);
@@ -55,6 +73,7 @@ export function addBmapBoundary(bmap, name, opts = {}) {
       if(!result.boundaries || !result.boundaries.length) {
         return ;
       }
+      
       const points = result.boundaries[0].split(';').map(llStr => {
         const [lng, lat] = llStr.split(',');
         return new Point(lng, lat);
