@@ -80,6 +80,7 @@ export class BmapTransformer extends EchartsTransformer {
    
     return {    
       bmap: this._bmapConfig,
+      _$getItem,
       executor: this._executor,
       series:[{
         coordinateSystem: 'bmap',
