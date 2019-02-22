@@ -1,5 +1,3 @@
-export * from './Data';
-
 export const blank = () => {};
 
 export function mergeConfig(obj ={}, cfg = {}, defaultValue = {}) {

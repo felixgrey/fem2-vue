@@ -1,6 +1,9 @@
-import 'echarts/extension/bmap/bmap';
+import 'echarts';
+import './ec-bmap/bmap';
+//import 'echarts/extension/bmap/bmap';
 import {bmpApiReady} from '../bmap';
-import {echartsColors, EchartsTransformer, transform, mergeConfig, blank} from './Utils';
+import {echartsColors, EchartsTransformer} from './Utils';
+import {transform, mergeConfig, blank} from '../../core';
 
 /*
   百度地图
@@ -85,7 +88,7 @@ export class BmapTransformer extends EchartsTransformer {
     return {    
       bmap: this._bmapConfig,
       _$getItem,
-      executor: this._executor,
+      executor: this._executor ,
       series:[{
         coordinateSystem: 'bmap',
         type: geomType,

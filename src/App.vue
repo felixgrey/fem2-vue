@@ -1,6 +1,8 @@
 <template>
   <div id="app">
-    <HelloEchartsLba />
+  	<HelloRp />
+    <HelloEchartsLba/>
+    <HelloEchartsBmap />
   </div>
 </template>
 

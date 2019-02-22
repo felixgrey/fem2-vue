@@ -1,4 +1,5 @@
-import {echartsColors, EchartsTransformer, transform} from './Utils';
+import {echartsColors, EchartsTransformer} from './Utils';
+import {transform} from '../../core';
 /*
   雷达 饼
  */

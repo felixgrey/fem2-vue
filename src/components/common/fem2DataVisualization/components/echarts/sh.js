@@ -1,2 +1,3 @@
 /* eslint-disable */
-import {echartsColors, EchartsTransformer, transform, noValue, mergeConfig} from './Utils';
+import {echartsColors, EchartsTransformer} from './Utils';
+import {transform, noValue, mergeConfig, blank} from '../../core';

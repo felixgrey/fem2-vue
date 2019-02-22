@@ -1,4 +1,5 @@
-import {echartsColors, EchartsTransformer, transform, mergeConfig} from './Utils';
+import {echartsColors, EchartsTransformer} from './Utils';
+import {transform, mergeConfig} from '../../core';
 /*
   折线 条形 区域
  */

@@ -1,6 +1,7 @@
 import echarts, {getInstanceByDom} from 'echarts';
+import 'echarts/extension/bmap/bmap';
+//import echarts from 'echarts/lib/echarts';
 import {transform, DataSetTransformer, noValue, mergeConfig, blank} from '../../core';
-export * from '../../core';
 
 const _optionExecutorData = {
   clear: function(flag, echart) {
@@ -37,7 +38,6 @@ const _optionExecutorData = {
 };
 
 
-//const gradientColor = ['#f6efa6', '#d88273', '#bf444c'];
 transform.echarts = {
   COLORS: [
    '#c23531', '#2f4554', '#61a0a8', '#d48265', '#91c7ae', '#749f83',
@@ -46,7 +46,8 @@ transform.echarts = {
   optionExecutor: (name, fun = blank) => {
     _optionExecutorData[name] = fun;
   }
-};
+}
+
 
 echarts.extendComponentModel({
   type: 'executor',
@@ -57,7 +58,8 @@ echarts.extendComponentView({
   type:'executor',
   render: function(executorModel, ecModel, api) {   
     const option = executorModel.option || {};    
-    const echart = getInstanceByDom(api.getDom())
+    const echart = getInstanceByDom(api.getDom());
+   
     for(let name in option){
       const exec = _optionExecutorData[name] || blank;
       exec(option[name], echart, {

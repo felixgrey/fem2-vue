@@ -71,10 +71,10 @@ chartOption.executor = {
     if(bmap){
       hiddenYouKnowWhat(bmap, true, true);
       
-      echart.on('click', (e) => { // echart点击事件
-      	const [lng, lat ,, {_items}] = e.data;
-				// bmap.openInfoWindow(new BMap.InfoWindow(_items[0].hospital,{width:100, height: 40}), new BMap.Point(lng,lat))
-			})
+//    echart.on('click', (e) => { // echart点击事件
+//    	const [lng, lat ,, {_items}] = e.data;
+//				// bmap.openInfoWindow(new BMap.InfoWindow(_items[0].hospital,{width:100, height: 40}), new BMap.Point(lng,lat))
+//			})
 
       syDistricts.forEach(name => {
       	// 添加行政区划
