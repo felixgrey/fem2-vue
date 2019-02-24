@@ -179,7 +179,8 @@ BMapCoordSys.create = function (ecModel, api) {
             // Not support IE8
             bmapRoot.classList.add('ec-extension-bmap');
             root.appendChild(bmapRoot);
-            var bmap = bmapModel.__bmap = new BMap.Map(bmapRoot);
+            const {mapOptions} = bmapModel.option || {};    
+            var bmap = bmapModel.__bmap = new BMap.Map(bmapRoot, mapOptions);
 
             var overlay = new Overlay(viewportRoot);
             bmap.addOverlay(overlay);

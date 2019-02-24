@@ -29,13 +29,16 @@ let chartOption = transform.echarts.bmapOption({
   lngField: 'lng',
   latField: 'lat',
   valueField: 'events',
+  mapOptions: { //地图配置，参考 http://lbsyun.baidu.com/cms/jsapi/reference/jsapi_reference_3_0.html#a0b1
+  	enableMapClick: false
+  },
   itemColors:(item, current, args) => {
 //		console.log(item._items[0].hospital);
-  	return '#fdd300';
+  	return current;
   },
   symbolSize:(item, args) => {
 //		console.log(item);
-  	return 30;
+  	return item.events * 5;
   },
   type: 'effectScatter',
 });
@@ -69,22 +72,25 @@ chartOption.executor = {
   // 如果存在使用百度地图的series，则返回百度地图对象，否则返回null， 只执行一次
   onBmapReady: (bmap, echart) => {
     if(bmap){
-      hiddenYouKnowWhat(bmap, true, true);
+     // hiddenYouKnowWhat(bmap, true, true);
       
 //    echart.on('click', (e) => { // echart点击事件
 //    	const [lng, lat ,, {_items}] = e.data;
 //				// bmap.openInfoWindow(new BMap.InfoWindow(_items[0].hospital,{width:100, height: 40}), new BMap.Point(lng,lat))
 //			})
-
-			addBmapBoundary(bmap, '沈阳市', {
-        	strokeWeight: 2, 
-        	strokeOpacity: 0.8,
-        	fillOpacity: 0.5,
-        	strokeColor: "#ffffff", 
-        	fillColor: districtColors[name] || "#ffffff"
-        }).then((pg) => { 
-        	console.log(pg)
-        })
+			let points = []
+			bmap.addEventListener("click",function(e){
+				let ll = '['+e.point.lng + "," + e.point.lat +']';
+					console.log(ll);
+					points.push(ll);
+			});
+			
+			Object.defineProperty(window,'yhsc',{
+				set:function(){
+					console.log(points.join(','));
+					points = [];
+				}
+			})
 
       syDistricts.forEach(name => {
       	// 添加行政区划
@@ -93,7 +99,7 @@ chartOption.executor = {
         	strokeOpacity: 0.8,
         	fillOpacity: 0.5,
         	strokeColor: "#ffffff", 
-        	fillColor: districtColors[name] || "#ffffff"
+        	fillColor: districtColors[name] || "#000"
         }).then((pg) => { // 可能需要异步获取数据，所以采用Promise模式
         	if(pg) { //如果获取行政区域数据失败，返回null
         		pg.addEventListener('click', (e) => { // 因为有echarts遮挡，所以在这里监听事件没用。。。
@@ -115,11 +121,6 @@ export default {
   mounted(){
     // 地图图表必须在地图API加载完成后配置
     bmpApiReady.then(() => {
-    	
- 			//下一次渲染echarts的百度地图的配置信息，因为封装缘故，采用此方法设置初始化信息
-    	transform.echarts.nextMapOptions({
-    		enableMapClick: false // 不可点击
-    	});
       this.chartOption = chartOption;
     });
   }

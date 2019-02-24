@@ -22,6 +22,44 @@ for (let i = 0 ; i < 8; i++) {
   });
 }
 
+// option原型
+let rpOptionPrototype = {
+	legend:{
+		show: false
+	},
+	// 当执行setOptions的时候执行的方法
+	executor: {
+		// echart第一次渲染完成时执行,返回echart对象
+		onEChartReady: (echart) => {		
+		// console.log(echart.getOption())
+		},
+		onClickItem:(item) => {
+			console.log(item)
+		}
+	},
+	series:[
+		{
+			type:'pie',
+			label:{
+				formatter: '{b}：{c}件，占比{d}%',
+				show: false,
+				emphasis: {
+		            show: true,
+		            textStyle: {
+		            	fontSize: '16',
+		                fontWeight: 'bold'
+		            }
+		        }
+			},
+			radius: ['40%', '60%'],
+			itemStyle:{
+				borderWidth: 2,
+				borderColor: '#fff'
+			}
+		}
+	]
+}
+
 // rp的含义是 radar pie
 let chartOption = transform.echarts.rpOption({
 	dataSource: data,
@@ -30,38 +68,7 @@ let chartOption = transform.echarts.rpOption({
 	itemColors: (item, corrent, args) => {
 	  return riskTypes[item.eventType];
 	}
-});
-
-chartOption.executor = {
-	// echart第一次渲染完成时执行,返回echart对象
-	onEChartReady: (echart) => {		
-//		console.log(echart.getOption())
-	},
-	onClickItem:(item) => {
-		console.log(item)
-	}
-}
-
-chartOption.legend = null;
-Object.assign(chartOption.series[0],{
-	label:{
-		formatter: '{b}：{c}件，占比{d}%',
-		show: false,
-		emphasis: {
-            show: true,
-            textStyle: {
-            	fontSize: '16',
-                fontWeight: 'bold'
-            }
-        }
-	},
-	radius: ['40%', '60%']
-})
-
-Object.assign(chartOption.series[0].itemStyle,{
-	borderWidth: 2,
-	borderColor: '#fff'
-});
+}, rpOptionPrototype);
 
 export default {
 	data () {

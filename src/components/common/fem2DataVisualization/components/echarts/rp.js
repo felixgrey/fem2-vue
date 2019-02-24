@@ -38,7 +38,7 @@ export class RpTransformer extends EchartsTransformer {
       return list[dataIndex];
     }
     
-    return {
+    return this._beforeReturn({
       executor: this._executor,
       _$getItem,
       color: this._colors,
@@ -56,9 +56,8 @@ export class RpTransformer extends EchartsTransformer {
         },
         data: list.map(item => ({name: item[_nameField], value:item[_valueField]}))
       }]
-    };  
+    });  
   }
-  
 }
 
 transform.echarts.rpOption = function(param = {}, optionTemplate = {}) {

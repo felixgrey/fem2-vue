@@ -140,11 +140,61 @@ export function originItem({value, item}) {
   return value;
 }
 
+export function deepClone(from, _hasCloned = new Set()) {
+  const isObj = typeof from === 'object';
+  if(isObj) {
+    if(_hasCloned.has(from)){
+      return from;
+    }
+    _hasCloned.add(from);
+  }
+
+  let  _clone = from;
+  if (Array.isArray(from)) {
+    _clone = [];
+    from.forEach((item, index) => {
+      _clone[index] = deepClone(item, _hasCloned);
+    });
+  } else if(isObj) {
+    _clone = {};
+    Object.keys(from).forEach((name) => {
+      _clone[name] = deepClone(from[name], _hasCloned);
+    });
+  }
+  
+  return _clone;
+}
+
+// 叶子节点直接赋值
+const _leaves = ['data', 'color', 'symbolSize'];
+export function deepMerge(to, from, leaves = _leaves) { 
+
+  if (Array.isArray(from)) { 
+    to = noValue(to) ? [] : to;
+    from.forEach((item, index) => {
+      to[index] = deepMerge(to[index], item, leaves);
+    });
+  } else if (typeof from === 'object') {
+    to = noValue(to) ? {} : to;
+    Object.keys(from).forEach((name) => {
+      if(leaves.indexOf(name) !== -1) {
+         to[name] = from[name];
+         return;
+      }
+      to[name] = deepMerge(to[name], from[name], leaves);
+    });
+  } else {
+    return from;
+  }
+  
+  return to;
+}
+
 export class EchartsTransformer extends DataSetTransformer {
   
-  constructor(config = {}, optionTemplate = {}) {
+  constructor(config = {}, optionPrototype = {}) {
     super(config);
-    this._optionTemplate = optionTemplate;
+    this._optionPrototype = deepClone(optionPrototype);
   }
   
   _checkGeomType(geomType) {
@@ -192,6 +242,30 @@ export class EchartsTransformer extends DataSetTransformer {
       const __type = this._type;
       this._type = () => __type;
     }   
+  }
+  
+  _beforeReturn(opt) {
+    const optionPrototype = this._optionPrototype;
+    const series = [].concat(optionPrototype.series || []);
+    const _series = {};
+    
+    optionPrototype.series = null;
+    series.forEach((cat, index) => {
+      if(noValue(cat.type)){
+        throw new Error(`optionPrototype.series[${index}] must has type`)
+      }
+      _series[cat.type] = cat;
+    });
+
+    opt.executor = opt.executor || this._executor; 
+    opt.series = [].concat(opt.series || []);
+    opt.series.forEach((cat, index) => {
+      if (_series[cat.type]) {
+        opt.series[index] = deepMerge(cat, _series[cat.type])  
+      }
+    });
+
+    return deepMerge(optionPrototype, opt);
   }
   
   _beforeOutput() {

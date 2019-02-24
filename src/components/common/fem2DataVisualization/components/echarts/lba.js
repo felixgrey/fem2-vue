@@ -92,7 +92,7 @@ export class LbaTransformer extends EchartsTransformer {
       };
     });
     
-    return {
+    return this._beforeReturn({
       executor: this._executor,
       _$getItem,
       color: allColors,
@@ -107,7 +107,7 @@ export class LbaTransformer extends EchartsTransformer {
         type: 'value'
       },
       series
-    };
+    });
   }
 }
 

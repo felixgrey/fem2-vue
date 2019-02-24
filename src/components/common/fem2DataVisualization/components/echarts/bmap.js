@@ -1,7 +1,7 @@
 import 'echarts';
 import './ec-bmap/bmap';
 //import 'echarts/extension/bmap/bmap';
-import {bmpApiReady} from '../bmap';
+//import {bmpApiReady} from '../bmap';
 import {echartsColors, EchartsTransformer} from './Utils';
 import {transform, mergeConfig, blank} from '../../core';
 
@@ -20,22 +20,6 @@ transform.echarts.optionExecutor('onBmapReady', function(onBmapReady, echart,{ex
     onBmapReady(bmapComponent.getBMap(), echart);
   }
 });
-
-let _nextMapOptions = {};
-transform.echarts.nextMapOptions = function(opt = {}){
-  _nextMapOptions = opt;
-}
-
-bmpApiReady.then(() => {
-  const _Map = global.BMap.Map;
-  global.BMap.Map = function (dom, opts){
-    if(dom && dom.className === 'ec-extension-bmap' && !opts){
-      opts = _nextMapOptions;
-      _nextMapOptions = {};
-    }
-    return new _Map(dom, opts);
-  }
-})
 
 export class BmapTransformer extends EchartsTransformer {
   _init (param = {}) {
@@ -84,8 +68,10 @@ export class BmapTransformer extends EchartsTransformer {
     const _$getItem = (seriesIndex, dataIndex) => {
       return list[dataIndex];
     }
+    
+    this._bmapConfig.mapOptions = this._mapOptions;
    
-    return {    
+    return this._beforeReturn({    
       bmap: this._bmapConfig,
       _$getItem,
       executor: this._executor ,
@@ -105,7 +91,7 @@ export class BmapTransformer extends EchartsTransformer {
         },
         data: list.map(item => [item[_lngField], item[_latField], item[_valueField], item])
       }]
-    };  
+    });  
   }
 }
 
