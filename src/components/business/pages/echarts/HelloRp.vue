@@ -37,9 +37,9 @@ let rpOptionPrototype = {
 			console.log(item)
 		}
 	},
-	series:[
+	series: [
 		{
-			type:'pie',
+			type:'pie', // 每个type写一个原型，写多个之前的会被覆盖
 			label:{
 				formatter: '{b}：{c}件，占比{d}%',
 				show: false,
