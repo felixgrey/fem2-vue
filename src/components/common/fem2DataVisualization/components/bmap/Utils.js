@@ -60,10 +60,11 @@ export function addBmapBoundary(bmap, name, opts = {}) {
   
   let path = transform.bmap.districts[name];
 
-  if (path) {  
+  if (path && path.length > 2) {  
     const points = path.map(([lng, lat]) => new Point(lng, lat));   
     const pg = new Polygon(points, opts);
-
+    pg.name = name;
+    pg.newData = false;
     bmap.addOverlay(pg);
     return Promise.resolve(pg);
   }
@@ -80,6 +81,8 @@ export function addBmapBoundary(bmap, name, opts = {}) {
       });
       const pg = new Polygon(points, opts);
       bmap.addOverlay(pg);
+      pg.name = name;
+      pg.newData = true;
       resolve(pg);
     });
   });

@@ -223,7 +223,8 @@ export class EchartsTransformer extends DataSetTransformer {
     opt.series = [].concat(opt.series || []);
     opt.series.forEach((cat, index) => {
       if (_series[cat.type]) {
-        opt.series[index] = deepMerge(_series[cat.type], cat,  _leaves)  
+        const clone = deepMerge(_series[cat.type]);
+        opt.series[index] = deepMerge(clone, cat,  _leaves)  
       }
     });
 
