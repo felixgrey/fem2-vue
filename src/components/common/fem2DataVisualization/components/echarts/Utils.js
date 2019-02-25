@@ -1,7 +1,7 @@
 import echarts, {getInstanceByDom} from 'echarts';
 import 'echarts/extension/bmap/bmap';
 //import echarts from 'echarts/lib/echarts';
-import {transform, DataSetTransformer, noValue, mergeConfig, blank} from '../../core';
+import {transform, DataSetTransformer, noValue, mergeConfig, blank, deepMerge} from '../../core';
 
 const _optionExecutorData = {
   clear: function(flag, echart) {
@@ -140,61 +140,15 @@ export function originItem({value, item}) {
   return value;
 }
 
-export function deepClone(from, _hasCloned = new Set()) {
-  const isObj = typeof from === 'object';
-  if(isObj) {
-    if(_hasCloned.has(from)){
-      return from;
-    }
-    _hasCloned.add(from);
-  }
 
-  let  _clone = from;
-  if (Array.isArray(from)) {
-    _clone = [];
-    from.forEach((item, index) => {
-      _clone[index] = deepClone(item, _hasCloned);
-    });
-  } else if(isObj) {
-    _clone = {};
-    Object.keys(from).forEach((name) => {
-      _clone[name] = deepClone(from[name], _hasCloned);
-    });
-  }
-  
-  return _clone;
-}
 
 // 叶子节点直接赋值
 const _leaves = ['data', 'color', 'symbolSize'];
-export function deepMerge(to, from, leaves = _leaves) { 
-
-  if (Array.isArray(from)) { 
-    to = noValue(to) ? [] : to;
-    from.forEach((item, index) => {
-      to[index] = deepMerge(to[index], item, leaves);
-    });
-  } else if (typeof from === 'object') {
-    to = noValue(to) ? {} : to;
-    Object.keys(from).forEach((name) => {
-      if(leaves.indexOf(name) !== -1) {
-         to[name] = from[name];
-         return;
-      }
-      to[name] = deepMerge(to[name], from[name], leaves);
-    });
-  } else {
-    return from;
-  }
-  
-  return to;
-}
-
 export class EchartsTransformer extends DataSetTransformer {
   
   constructor(config = {}, optionPrototype = {}) {
     super(config);
-    this._optionPrototype = deepClone(optionPrototype);
+    this._optionPrototype = deepMerge(optionPrototype);
   }
   
   _checkGeomType(geomType) {
@@ -261,7 +215,7 @@ export class EchartsTransformer extends DataSetTransformer {
     opt.series = [].concat(opt.series || []);
     opt.series.forEach((cat, index) => {
       if (_series[cat.type]) {
-        opt.series[index] = deepMerge(cat, _series[cat.type])  
+        opt.series[index] = deepMerge(_series[cat.type], cat,  _leaves)  
       }
     });
 
@@ -282,7 +236,5 @@ export class EchartsTransformer extends DataSetTransformer {
   }
 
 }
-
-
 
 
