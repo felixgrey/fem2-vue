@@ -69,11 +69,17 @@ export class BmapTransformer extends EchartsTransformer {
       return list[dataIndex];
     }
     
+    const _$getItemColor = (seriesIndex, dataIndex, args)=> {
+      const current = allColors[dataIndex % allColors.length];
+      return echartsColors(current, list[dataIndex], args)(this._itemColors);
+    };
+    
     this._bmapConfig.mapOptions = this._mapOptions;
    
     return this._beforeReturn({    
       bmap: this._bmapConfig,
       _$getItem,
+      _$getItemColor,
       executor: this._executor ,
       series:[{
         coordinateSystem: 'bmap',

@@ -140,7 +140,15 @@ export function originItem({value, item}) {
   return value;
 }
 
-
+const _attrs = ['xAxis', 'yAxis']
+function optionAttrToArray(opt) {
+  _attrs.forEach(name => {
+    if(!noValue(opt[name])){
+      opt[name] = [].concat(opt[name]);
+    }
+  });
+  return opt;
+}
 
 // 叶子节点直接赋值
 const _leaves = ['data', 'color', 'symbolSize'];
@@ -148,7 +156,7 @@ export class EchartsTransformer extends DataSetTransformer {
   
   constructor(config = {}, optionPrototype = {}) {
     super(config);
-    this._optionPrototype = deepMerge(optionPrototype);
+    this._optionPrototype = optionAttrToArray(deepMerge(optionPrototype));
   }
   
   _checkGeomType(geomType) {

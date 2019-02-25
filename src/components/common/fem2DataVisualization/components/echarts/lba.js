@@ -1,5 +1,5 @@
 import {echartsColors, EchartsTransformer} from './Utils';
-import {transform, mergeConfig} from '../../core';
+import {transform, mergeConfig, DataMap} from '../../core';
 /*
   折线 条形 区域
  */
@@ -40,14 +40,14 @@ export class LbaTransformer extends EchartsTransformer {
     const _seriesData = Array.from(this._data.keys()).map(key => this._data.get(key));  
     const dataCount = _seriesData.length;
     const getSeriesData = this._seriesField ? (name) => {
-      return _seriesData.map(dataMap => {       
-        const item = dataMap.get(name).toObject();
+      return _seriesData.map(dataMap => {
+        const item = (dataMap.get(name)|| new DataMap(null, name)).toObject();
         list.push(item);
         return item[this._yAxisField];
       })
     } : () => {
       return _seriesData.map(dataMap => {
-        const item = dataMap.toObject();
+        const item = (dataMap[0] || new DataMap()).toObject();
         list.push(item);
         return item[this._yAxisField];
       })
@@ -57,6 +57,13 @@ export class LbaTransformer extends EchartsTransformer {
       const index = seriesIndex * dataCount + dataIndex;
       return list[index];
     };
+    
+    const _$getItemColor = (seriesIndex, dataIndex, args) => {
+      const current = allColors[seriesIndex % allColors.length];
+      return echartsColors(current, _$getItem(seriesIndex, dataIndex), args)(this._itemColors);
+    };
+
+    let boundaryGap = (this._optionPrototype.xAxis && this._optionPrototype.xAxis[0].boundaryGap) || false; // 是否从顶点开始
     
     const series = seriesNames.map((name, index) => {  
       const current = allColors[index % allColors.length];
@@ -74,16 +81,30 @@ export class LbaTransformer extends EchartsTransformer {
         }
       }
 
+      let itemColor = current;
+      let lineColor = current;
+      if(geomType !== 'line') {
+        boundaryGap = true; // 只有折线图从顶点开始
+        itemColor = (...args) => {
+          const {seriesIndex, dataIndex} = args[0];
+          return _$getItemColor(seriesIndex, dataIndex, args);
+        };
+        lineColor = 'transparent';
+      }
+
       return {
         name,
         itemStyle:{
-          color: (...args) => {
-            const {seriesIndex, dataIndex} = args[0];
-            return echartsColors(current, _$getItem(seriesIndex, dataIndex), args)(this._itemColors);
-          }    
+          color: itemColor
+        },
+        lineStyle:{
+          color: lineColor
         },
         areaStyle:{
           color: areaColor, 
+        },
+        label: {
+          color: itemColor
         },
         stack,
         smooth: this._smooth,
@@ -93,19 +114,20 @@ export class LbaTransformer extends EchartsTransformer {
     });
     
     return this._beforeReturn({
-      executor: this._executor,
       _$getItem,
+      _$getItemColor,
       color: allColors,
       legend:{
         data: seriesNames
       },
-      xAxis:{
+      xAxis:[{
         type: 'category',
+        boundaryGap,
         data: fields[this._xAxisField]
-      },
-      yAxis: {
+      }],
+      yAxis: [{
         type: 'value'
-      },
+      }],
       series
     });
   }

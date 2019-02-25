@@ -38,9 +38,20 @@ export class RpTransformer extends EchartsTransformer {
       return list[dataIndex];
     }
     
+    const _$getItemColor = (seriesIndex, dataIndex, args)=> {
+      const current = allColors[dataIndex % allColors.length];
+      return echartsColors(current, list[dataIndex], args)(this._itemColors);
+    };
+    
+    const itemColor = (...args) => {
+      const {seriesIndex, dataIndex} = args[0];
+      return _$getItemColor(seriesIndex, dataIndex, args);
+    };   
+    
     return this._beforeReturn({
       executor: this._executor,
       _$getItem,
+      _$getItemColor,
       color: this._colors,
       legend:{
         data: enums[_nameField]
@@ -48,11 +59,10 @@ export class RpTransformer extends EchartsTransformer {
       series:[{
         type: geomType,
         itemStyle:{
-          color: (...args)=> {
-            const {dataIndex} = args[0];
-            const current = allColors[dataIndex % allColors.length];
-            return echartsColors(current, list[dataIndex], args)(this._itemColors);
-          }  
+          color: itemColor  
+        },
+        label: {
+          color: itemColor
         },
         data: list.map(item => ({name: item[_nameField], value:item[_valueField]}))
       }]
