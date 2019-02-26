@@ -28,6 +28,11 @@ for (let i = 0 ; i < 16; i++) {
 let chartOption = transform.echarts.rpOption({
 	type: 'radar', //雷达图
 	dataSource: data,
+	executor: {
+		onClickItem:(item) => {
+			console.log(item)
+		}
+	},
 	nameField: 'sect', // 折线名称字段，必填（用颜色区分）
 	valueField: 'events',  // 值字段，必填（用半径区分）
 	indicatorField: 'eventType', // 雷达维度字段 ，必填（在图表外围列举）
