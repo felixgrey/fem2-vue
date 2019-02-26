@@ -48,7 +48,6 @@ transform.echarts = {
   }
 }
 
-
 echarts.extendComponentModel({
   type: 'executor',
   defaultOption:{}
@@ -140,41 +139,41 @@ export function originItem({value, item}) {
   return value;
 }
 
-const _attrs = ['xAxis', 'yAxis']
-function optionAttrToArray(opt) {
-  _attrs.forEach(name => {
-    if(!noValue(opt[name])){
-      opt[name] = [].concat(opt[name]);
-    }
-  });
-  return opt;
-}
-
 // 叶子节点直接赋值
-const _leaves = ['data', 'color', 'symbolSize'];
+const _leaves = ['data', 'color', 'symbolSize', 'indicator'];
 export class EchartsTransformer extends DataSetTransformer {
   
   constructor(config = {}, optionPrototype = {}) {
     super(config);
-    this._optionPrototype = optionAttrToArray(deepMerge(optionPrototype));
+    this._optionPrototype = deepMerge(optionPrototype);
+    this._optComToArr(this._optionPrototype);
+  }
+  
+  _optComToArr(opt) {
+    for(let name in opt) {
+      if(!noValue(opt[name]) && (!(/^_\$/g.test(name)))){
+        opt[name] = [].concat(opt[name]);
+      }
+    }
   }
   
   _checkGeomType(geomType) {
-    return new RegExp(geomType, 'g').test(this._geomTypes);
+    if(!(new RegExp(this._geomTypes, 'g').test(geomType))){
+      throw new Error(`EchartsTransformer(${this.name}) do not support type '${geomType}'`);
+    }
   }
   
   _beforeConfig(_config){
     const config = Object.assign({
         aggregate: {},
         valueFields: []
-      }, this._optionTemplate, _config);
+      },
+      this._optionTemplate, _config
+    );
 
-    let originName = this._originAs;
-    if (originName !== false) {
-      originName = noValue(originName) ? '_item': originName;
-      config.aggregate[originName] = originItem;
-      config.valueFields.push(originName);
-    }
+    const originName = this._originAs;
+    config.aggregate[originName] = originItem;
+    config.valueFields.push(originName);
 
     return config;
   }
@@ -182,18 +181,21 @@ export class EchartsTransformer extends DataSetTransformer {
   _beforeInit(param = {}, {defaultType, mustHas = [] , name = '', geomTypes = ''}) {
     
     if(noValue(param.dataSource)){
-      throw new Error(`Echars(${name}) config must has dataSource`);
+      throw new Error(`EchartsTransformer(${name}) config must has dataSource`);
     }
     
     mustHas.forEach(field => {
       if (noValue(param[field])) {
-        throw new Error(`Echars(${name}) config must has ${mustHas.join(',')} fields`);
+        throw new Error(`EchartsTransformer(${name}) config must has ${mustHas.join(',')} fields`);
       }   
     });
+    
+    this.name = name;
 
     mergeConfig(this, param, {
       colors: transform.echarts.COLORS,
       itemColors: ':-',
+      originAs: '_item',
       aggregate: transform.AGGREGATES.sum,
       geomTypes,
       executor: {},
@@ -201,6 +203,7 @@ export class EchartsTransformer extends DataSetTransformer {
     });
 
     if (typeof this._type === 'string') {
+      this._checkGeomType(this._type);
       const __type = this._type;
       this._type = () => __type;
     }   
@@ -219,8 +222,12 @@ export class EchartsTransformer extends DataSetTransformer {
       _series[cat.type] = cat;
     });
 
+    opt.color = opt.color || this._colors;
     opt.executor = opt.executor || this._executor; 
-    opt.series = [].concat(opt.series || []);
+    opt.series = opt.series || {};
+    
+    this._optComToArr(opt);
+    
     opt.series.forEach((cat, index) => {
       if (_series[cat.type]) {
         const clone = deepMerge(_series[cat.type]);

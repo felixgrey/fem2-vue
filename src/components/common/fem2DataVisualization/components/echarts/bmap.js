@@ -62,7 +62,6 @@ export class BmapTransformer extends EchartsTransformer {
     const {allColors} = this._beforeOutput();  
     const {list} = super.output();
     let geomType = this._type(null);
-    this._checkGeomType(geomType);
     const {_lngField, _latField, _valueField} = this;
     
     const _$getItem = (seriesIndex, dataIndex) => {
@@ -80,8 +79,7 @@ export class BmapTransformer extends EchartsTransformer {
       bmap: this._bmapConfig,
       _$getItem,
       _$getItemColor,
-      executor: this._executor ,
-      series:[{
+      series: {
         coordinateSystem: 'bmap',
         type: geomType,
         symbolSize:(...args) => {
@@ -96,7 +94,7 @@ export class BmapTransformer extends EchartsTransformer {
           }  
         },
         data: list.map(item => [item[_lngField], item[_latField], item[_valueField], item])
-      }]
+      }
     });  
   }
 }

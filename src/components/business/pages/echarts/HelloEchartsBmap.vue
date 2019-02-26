@@ -16,7 +16,7 @@ let data = [];
 for (let i = 0 ; i < 8; i++) {
   data.push({
     id:i+1,
-    hospital: `某医院 - ${i}`,
+    sect: `某流派 - ${i}`,
     lng: 122.85 + Math.random(),
     lat: 41.25 + Math.random(),
     events: i +5,
@@ -25,7 +25,7 @@ for (let i = 0 ; i < 8; i++) {
 
 let chartOption = transform.echarts.bmapOption({
   dataSource: data,
-  originAs:'_items', // 将聚合前的数据以数组形式保存到某个字段
+  originAs: 'originItems', // 将聚合前的数据以数组形式保存到某个字段，默认_item
   lngField: 'lng',
   latField: 'lat',
   valueField: 'events',
@@ -33,7 +33,7 @@ let chartOption = transform.echarts.bmapOption({
   	enableMapClick: false
   },
   itemColors:(item, current, args) => {
-//		console.log(item._items[0].hospital);
+//		console.log(item.originItems[0].sect);
   	return current;
   },
   symbolSize:(item, args) => {
@@ -42,23 +42,6 @@ let chartOption = transform.echarts.bmapOption({
   },
   type: 'effectScatter',
 });
-
-// 新增样式
-const styleNode = document.createElement('style');
-styleNode.innerHTML = `.hidden-you-know-what-bmap-1 .anchorBL,.hidden-you-know-what-bmap-2 img{display:none};`;
-document.head.appendChild(styleNode);
-
-function hiddenYouKnowWhat(bmap, copyright = false, img = false) {
-  const dom = bmap.getContainer();
-  dom.style.backgroundColor = 'transparent'; 
-  dom.className = dom.className.replace(' hidden-you-know-what-bmap-1 ', '').replace(' hidden-you-know-what-bmap-2 ', '');
-  if(copyright) {
-  	dom.className = dom.className + ' hidden-you-know-what-bmap-1 ';
-  }
-  if(img) {
-  	dom.className = dom.className + ' hidden-you-know-what-bmap-2 ';
-  }
-}
 
 // 扩展配置
 chartOption.executor = {
@@ -72,14 +55,13 @@ chartOption.executor = {
   // 如果存在使用百度地图的series，则返回百度地图对象，否则返回null， 只执行一次
   onBmapReady: (bmap, echart) => {
     if(bmap){
-     // hiddenYouKnowWhat(bmap, true, true);
       
 //    echart.on('click', (e) => { // echart点击事件
 //    	const [lng, lat ,, {_items}] = e.data;
-//				// bmap.openInfoWindow(new BMap.InfoWindow(_items[0].hospital,{width:100, height: 40}), new BMap.Point(lng,lat))
+//				// bmap.openInfoWindow(new BMap.InfoWindow(_items[0].sect,{width:100, height: 40}), new BMap.Point(lng,lat))
 //			})
 			let points = []
-			bmap.addEventListener("click",function(e){
+			bmap.addEventListener("click", function(e) {
 				let ll = '['+e.point.lng + "," + e.point.lat +']';
 					console.log(ll);
 					points.push(ll);

@@ -8,15 +8,15 @@
 /* eslint-disable */
 import {transform, } from '@/components/common/fem2DataVisualization';
 
-const riskTypes = transform.business.colorsMap.riskTypes;
-const riskTypeList = Object.keys(riskTypes);
+const memberNames = transform.business.colorsMap.memberNames;
+const riskTypeList = Object.keys(memberNames);
 
 // 测试数据
 let data = [];
 for (let i = 0 ; i < 8; i++) {
   data.push({
     id:i+1,
-    hospital: '李四医院',
+    sect: '张无忌',
     eventType: riskTypeList[i%riskTypeList.length],
     events: 10+2*i,  
   });
@@ -63,10 +63,10 @@ let rpOptionPrototype = {
 // rp的含义是 radar pie
 let chartOption = transform.echarts.rpOption({
 	dataSource: data,
-	nameField: 'eventType',
-	valueField: 'events',  
+	nameField: 'eventType', // 名称字段，必填（用颜色区分）
+	valueField: 'events',  // 值字段，必填（用扇形角度区分）
 	itemColors: (item, corrent, args) => {
-	  return riskTypes[item.eventType];
+	  return memberNames[item.eventType];
 	}
 }, rpOptionPrototype);
 

@@ -1,6 +1,7 @@
 <template>
   <div id="app">
-    <HelloRp />
+    <HelloRadar />
+    <HelloPie />
     <HelloEchartsLba/>
     <HelloEchartsBmap />
   </div>
@@ -12,7 +13,9 @@ import HelloStore from './components/business/pages/store/HelloStore.vue';
 
 import HelloEchartsBmap from './components/business/pages/echarts/HelloEchartsBmap.vue';
 import HelloEchartsLba from './components/business/pages/echarts/HelloEchartsLba.vue';
-import HelloRp from './components/business/pages/echarts/HelloRp.vue';
+import HelloPie from './components/business/pages/echarts/HelloPie.vue';
+import HelloRadar from './components/business/pages/echarts/HelloRadar.vue';
+
 
 /*
     <HelloEchartsLba/>
@@ -33,7 +36,8 @@ export default {
     HelloEchartsBmap,
     HelloEchartsLba,
     HelloStore,  
-    HelloRp,
+    HelloPie,
+    HelloRadar,
   }
 }
 </script>

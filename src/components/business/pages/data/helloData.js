@@ -26,7 +26,7 @@ const data = [];
 for (let i = 0 ; i < 8; i++) {
   data.push({
     id:i+1,
-    hospital: i%3 == 0 ? '张三医院' : '李四医院',
+    sect: i%3 == 0 ? '张三医院' : '李四医院',
     sex: i%2 ? '男' : '女',
     money: i*100 +5,
     age: 10+2*i,  
@@ -35,7 +35,7 @@ for (let i = 0 ; i < 8; i++) {
 for (let i = 8; i < 12; i++) {
   data.push({
     id: i+1,
-    hospital: '王五医院',
+    sect: '王五医院',
     sex: i%3 ? '女' : '男',
     money: i*200,
     age: 20+2*i,   
@@ -67,8 +67,8 @@ const transformedData = transform({
     $defaultText: '', // 字符串型字段值为空时的默认值，默认 ''（join函数使用）
     $split : ',' // 字符串连接聚合时的分隔符,默认 ','（join函数使用）
   },
-  groupFields: ['hospital', 'sex'], // 所有分组字段
-//groupFields: ['hospital'],
+  groupFields: ['sect', 'sex'], // 所有分组字段
+//groupFields: ['sect'],
 //groupFields: [],
   valueFields: ['money', 'age', 'id', 'count', 'maxMoney', 'minAge'], // 所有聚合字段，包括自定义的字段count、maxMoney、minAge
 //valueFields: []
@@ -89,7 +89,7 @@ console.log(transportObjectInArray(transformedData.list));
  transformedData =
   {
     "enums": { // 分组后的字段值枚举
-      "hospital": [ // 按照插入顺序
+      "sect": [ // 按照插入顺序
         "张三医院", 
         "李四医院",
         "王五医院"
@@ -101,7 +101,7 @@ console.log(transportObjectInArray(transformedData.list));
     },
     "list": [ // 聚合后的数据列表
       {
-        "hospital": "张三医院",
+        "sect": "张三医院",
         "sex": "女",
         "money": 610,
         "age": 16,
@@ -111,7 +111,7 @@ console.log(transportObjectInArray(transformedData.list));
         "minAge": 10
       },
       {
-        "hospital": "张三医院",
+        "sect": "张三医院",
         "sex": "男",
         "money": 305,
         "age": 16,
@@ -121,7 +121,7 @@ console.log(transportObjectInArray(transformedData.list));
         "minAge": 16
       },
       {
-        "hospital": "李四医院",
+        "sect": "李四医院",
         "sex": "男",
         "money": 1315,
         "age": 18.666666666666668,
@@ -131,7 +131,7 @@ console.log(transportObjectInArray(transformedData.list));
         "minAge": 12
       },
       {
-        "hospital": "李四医院",
+        "sect": "李四医院",
         "sex": "女",
         "money": 610,
         "age": 16,
@@ -141,7 +141,7 @@ console.log(transportObjectInArray(transformedData.list));
         "minAge": 14
       },
       {
-        "hospital": "王五医院",
+        "sect": "王五医院",
         "sex": "女",
         "money": 5800,
         "age": 39.333333333333336,
@@ -151,7 +151,7 @@ console.log(transportObjectInArray(transformedData.list));
         "minAge": 36
       },
       {
-        "hospital": "王五医院",
+        "sect": "王五医院",
         "sex": "男",
         "money": 1800,
         "age": 38,

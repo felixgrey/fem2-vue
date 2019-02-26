@@ -8,7 +8,6 @@ import shenyangDistrictsData from '@/components/business/services/localData/shen
 // 颜色图谱
 import colorsMap from '@/components/business/services/localData/colorsMap.js';
 
-
 // 加入到配置信息里
 Object.assign(transform.bmap.districts, shenyangDistrictsData);
 

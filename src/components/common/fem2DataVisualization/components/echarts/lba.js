@@ -116,18 +116,17 @@ export class LbaTransformer extends EchartsTransformer {
     return this._beforeReturn({
       _$getItem,
       _$getItemColor,
-      color: allColors,
       legend:{
         data: seriesNames
       },
-      xAxis:[{
+      xAxis:{
         type: 'category',
         boundaryGap,
         data: fields[this._xAxisField]
-      }],
-      yAxis: [{
+      },
+      yAxis: {
         type: 'value'
-      }],
+      },
       series
     });
   }
