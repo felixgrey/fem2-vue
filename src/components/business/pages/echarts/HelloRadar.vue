@@ -19,8 +19,8 @@ for (let i = 0 ; i < 16; i++) {
   data.push({
     id:i+1,
     sect: sectArray[i%sectArray.length] ,
-    eventType: riskTypeList[i%riskTypeList.length],
-    events: 10+2*i,  
+    vs: riskTypeList[i%riskTypeList.length],
+    victory: 10+2*i,  
   });
 }
 
@@ -34,8 +34,8 @@ let chartOption = transform.echarts.rpOption({
 		}
 	},
 	nameField: 'sect', // 折线名称字段，必填（用颜色区分）
-	valueField: 'events',  // 值字段，必填（用半径区分）
-	indicatorField: 'eventType', // 雷达维度字段 ，必填（在图表外围列举）
+	valueField: 'victory',  // 值字段，必填（用半径区分）
+	indicatorField: 'vs', // 雷达维度字段 ，必填（在图表外围列举）
 	// itemColors: 此配置失效，因为line不支持函数配置颜色
 }); // 无option原型，全部用默认样式
 
