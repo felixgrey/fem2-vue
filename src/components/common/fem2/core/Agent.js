@@ -141,14 +141,15 @@ context._declareAgent = {
     createModel() {
       const model = {};
       this.store.dataNames.forEach(dataName => {
-        const $dataName = `$${dataName}`;
-        const _dataName = `_${dataName}`;
+        const dataName1 = `${dataName}Data`;
+        const dataName2 = `${dataName}Status`;
+        const dataName3 = `${dataName}First`;
         
-        model[dataName] = this.store.model[dataName];
-        model[$dataName] = this.store.model[$dataName];
-        model[_dataName] = this.store.model[_dataName];
+        model[dataName1] = this.store.model[dataName1];
+        model[dataName2] = this.store.model[dataName2];
+        model[dataName3] = this.store.model[dataName3];
       });     
-      return model;
+      return Object.freeze(model);
     }
   }
 };

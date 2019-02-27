@@ -70,10 +70,10 @@ Agent.component = (agentName, option = {}) => {
         $view.$vue = this;
         $view.initView({$name: '$storeView'}, option.$store || this.store);
         
-        this.$$view = $view;
-        this.$$store = $view.store;
-        this.$$controller = $view.controller;
-
+        this.$View = $view;
+        this.$Store = $view.store;
+        this.$Controller = $view.controller;
+        this.$Model = $view.store.model;
         return result;
     });
     

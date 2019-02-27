@@ -1,9 +1,9 @@
 <template>
 	<div>
 		<div>{{msg}}</div>
-		<div>{{myData}} {{model.data1}}</div>
-		<div>{{model.$data2}} {{model.data2}}</div>
-		<div>{{model._data3}} {{model.data3}}</div>
+		<div>{{myData}} {{model.data1Data}}</div>
+		<div>{{model.data2First}} {{model.data2Data}}</div>
+		<div>{{model.data3Status}} {{model.data3Data}}</div>
 	</div>
 	
 </template>
@@ -146,35 +146,35 @@ class Hello extends blank {
 		},
 		mounted: function(){
 			
-			// 为了避免和 vuex 的$store冲突，用$$做前缀,this.model为渲染数据
-			// console.log(this.model, this.$$view,this.$$store, this.$$controller)
+			// 为了避免和 vuex 的$store冲突，用大写S,this.model为渲染数据,this.$Model是this.$Store.model的别名
+			// console.log(this.model, this.$View,this.$Store, this.$Controller, this.$Model)
 			
-			this.$$controller.on(`$modelChange:${this.$$view.uniKey}`,() => {
+			this.$Controller.on(`$modelChange:${this.$View.uniKey}`,() => {
 				const {
-					data1, // data1数据数组
-					$data1, // data1数据数组第一条
-					_data1 // data1数据状态
+					data1Data, // data1数据数组
+					data1First, // data1数据数组第一条
+					data1Status // data1数据状态
 				} = this.model;
-				//console.log({data1, $data1, _data1});
+				//console.log({data1Data, data1First, data1Status});
 			});
 			
 			setTimeout(() => {			
-				// this.model.data1 = ['ssssss']  // this.model是只读属性，必须通过store修改数据
-				// this.$$store.model.data1 = ['ssssss','dddddd']; 在data3是loading状态的时候作为依赖的data1锁定不能修改
+//				this.model.data1Data = ['ssssss']  // this.model是只读属性，必须通过store修改数据
+//				this.$Model.data1Data = ['ssssss','dddddd']; 在data3是loading状态的时候作为依赖的data1锁定不能修改
 				
-				this.$$store.model.data2 = ['ssssss','dddddd']; // 通过store的model直接赋值
-				this.$$store.model.data2 = data => data.map(item => `${item}123`); // 如果传入函数则可以用于更新数据
-				this.$$store.model.$data2 = value => `${value}_$$$`; // 更新第一条数据
-				this.$$store.model._data2 = 'locked'; // 修改状态
+				this.$Model.data2Data = ['ssssss','dddddd']; // 通过store的model直接赋值
+				this.$Model.data2Data = data => data.map(item => `${item}123`); // 如果传入函数则可以用于更新数据
+				this.$Model.data2First = value => `${value}_$$$`; // 更新第一条数据
+				this.$Model.data2Status = 'locked'; // 修改状态
 				
 				const {
-					data2, // data2数据数组
-					$data2, // data2数据数组第一条
-					_data2 // data2数据状态
-				} = this.$$store.model; //注意是store的model
-				//console.log({data2, $data2, _data2});
+					data2Data, // data2数据数组
+					data2First, // data2数据数组第一条
+					data2Status // data2数据状态
+				} = this.$Model; //注意是store的model
+				//console.log({data2Data, data2First, data2Status});
 				
-			},500);
+			},2000);
 			
 			// return false //mounted return false 会阻止$$view.viewReady的自动执行，可根据业务手动执行。
 		}

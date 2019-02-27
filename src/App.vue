@@ -1,9 +1,11 @@
 <template>
   <div id="app">
+    <HelloStore />
+    ========================================================================
     <HelloRadar />
     <HelloPie />
     <HelloEchartsLba/>
-    <HelloEchartsBmap />
+    <HelloEchartsBmap />   
   </div>
 </template>
 

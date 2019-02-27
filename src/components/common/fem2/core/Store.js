@@ -127,17 +127,24 @@ class Store {
     }
     
     this.dataNames.forEach(name => {
-      this._defineModel(name)
+      this.defineModel(name)
     });
   }
   
-  _defineModel(name){
+  removeModel(name){
+    const model = this.model;
+    delete model[`${name}Data`];
+    delete model[`${name}First`];
+    delete model[`${name}Status`];
+  }
+  
+  defineModel(name){
     const model = this.model;
     if(model.hasOwnProperty(name)) {
       return;
     }
     
-    Object.defineProperty(model, name, {
+    Object.defineProperty(model, `${name}Data`, {
       configurable: true,
       enumerable: true,
       get: () => {
@@ -152,7 +159,7 @@ class Store {
       }
     });
     
-    Object.defineProperty(model, `$${name}`, {
+    Object.defineProperty(model, `${name}First`, {
       configurable: true,
       enumerable: true,
       get: () => {
@@ -169,7 +176,7 @@ class Store {
       }
     });
     
-    Object.defineProperty(model, `_${name}`, {
+    Object.defineProperty(model, `${name}Status`, {
       configurable: true,
       enumerable: true,
       get:() => {
