@@ -1,5 +1,6 @@
 <template>
   <div id="app">
+    <HelloCodemirror />
     <HelloStore />
     ========================================================================
     <HelloRadar />
@@ -11,8 +12,8 @@
 
 <script>
 /* eslint-disable */
+import HelloCodemirror from './components/business/pages/codemirror/HelloCodemirror.vue';
 import HelloStore from './components/business/pages/store/HelloStore.vue';
-
 import HelloEchartsBmap from './components/business/pages/echarts/HelloEchartsBmap.vue';
 import HelloEchartsLba from './components/business/pages/echarts/HelloEchartsLba.vue';
 import HelloPie from './components/business/pages/echarts/HelloPie.vue';
@@ -40,6 +41,7 @@ export default {
     HelloStore,  
     HelloPie,
     HelloRadar,
+    HelloCodemirror,
   }
 }
 </script>
