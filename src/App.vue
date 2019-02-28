@@ -1,5 +1,6 @@
 <template>
   <div id="app">
+    <HellohHandsontable />
     <HelloCodemirror />
     <HelloStore />
     ========================================================================
@@ -12,6 +13,7 @@
 
 <script>
 /* eslint-disable */
+import HellohHandsontable from './components/business/pages/handsontable/HellohHandsontable.vue';
 import HelloCodemirror from './components/business/pages/codemirror/HelloCodemirror.vue';
 import HelloStore from './components/business/pages/store/HelloStore.vue';
 import HelloEchartsBmap from './components/business/pages/echarts/HelloEchartsBmap.vue';
@@ -42,6 +44,7 @@ export default {
     HelloPie,
     HelloRadar,
     HelloCodemirror,
+    HellohHandsontable
   }
 }
 </script>
