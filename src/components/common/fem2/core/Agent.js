@@ -280,15 +280,6 @@ Agent.store = (config, option={}) => {
   } 
 }
 
-context._commonConfig = {};
-Agent.commonConfig = (config) => {
-  if(noValue(config)){
-    return Object.freeze({...context._commonConfig});
-  }
-  context._commonConfig = config;
-  manager && manager.emit('$commonConfig', Object.freeze({...config}));
-};
-
 Agent.router = () => {
   errorLog('must implement Agent.router first');
 };

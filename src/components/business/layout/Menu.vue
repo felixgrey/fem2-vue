@@ -3,8 +3,15 @@
 </template>
 
 <script>
+  /* eslint-disable */
+  import {routes} from '@/components/common/autoRouter';
+  
+  
+  
   export default {
-    props: ['routes'],
+    mounted(){
+      console.log(routes)
+    }
   }
 </script>
 

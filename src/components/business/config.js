@@ -1,4 +1,4 @@
-import {Agent, transform} from '@/components/vueFem2';
+import {transform} from '@/components/vueFem2';
 
 import './services/myService.js';
 
@@ -34,6 +34,3 @@ transform.bmap.bmapConfig = {
 // 百度地图AK，设置后会自动加载百度地图,因此必须在最后设置
 transform.bmap.bmapAK = '3zq2c5fIT48YHlvVGVd8ShkBqF8LafPW'; 
 
-Agent.commonConfig({
-  
-});

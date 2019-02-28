@@ -1,6 +1,6 @@
 <template>
   <div>
-    <Menu :routes="routes" />
+    <Menu/>
     <div>
       <Header />
       <router-view />
@@ -32,7 +32,7 @@
     // 是否查询其子目录
     true,
     // 匹配基础组件文件名的正则表达式
-    /\w+\.(vue)$/
+    /[^_]\w+\.(vue)$/
   );
 
   // 带目录配置信息的路由列表
@@ -44,7 +44,6 @@
 
   export default {
     name: 'index',
-    data: () => ({routes}),
     router: new VueRouter({routes}),
     created() {/*注入路由方法*/ injectRouter(this);},
     components: {Footer, Header, Menu}
