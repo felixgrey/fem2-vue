@@ -14,6 +14,14 @@
 <script>
 	/* eslint-disable */
 	import { CodeMirror, babel } from '@/components/vueFem2';
+	
+//	export const $Register = {
+//	  key: 'HelloCodemirror',
+//	  name: 'HelloCodemirror',
+//	  path: '/HelloCodemirror',
+//	  icon: null,
+//	  parentKey: null
+//	}
 
 	export default {
 		mounted() {

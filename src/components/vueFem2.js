@@ -1,14 +1,16 @@
 import Vue from 'vue';
 import $ from 'jquery';
 import BootstrapVue from 'bootstrap-vue';
+import VueRouter from 'vue-router';
 import 'bootstrap/dist/css/bootstrap.css';
 import 'bootstrap-vue/dist/bootstrap-vue.css';
 import ECharts from 'vue-echarts';
-import { Agent, monkey, blank} from './common/fem2';
+import { Agent, monkey, blank} from './common';
 
 export * from './common';
 
 Vue.use(BootstrapVue);
+Vue.use(VueRouter);
 Vue.component('v-chart', ECharts);
 
 // jquery实现事件发射器
@@ -128,8 +130,15 @@ Agent.ajax = function(url, data, option = {}){
   });
 }
 
-// 封装vue路由
-Agent.router = (path = '', option = {target: '_self'}) => {
-  global.console.log(path, option);
+// vue路由在根实例创建后注入
+export function injectRouter(_vue) {
+  Agent.router = (path, option = {}) => {
+    if(option.target === '_blank') {
+      // TODO: -
+    } else if (typeof path === 'string') {
+      _vue.$router.push(path);
+    } else if (typeof path === 'number') {
+      _vue.$router.go(path);
+    }
+  }
 }
-

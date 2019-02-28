@@ -48,7 +48,7 @@ for (let i = 8; i < 12; i++) {
 }
 
 // 原始数据
-console.log(data); 
+//console.log(data); 
 
 // 聚合后的数据
 const transformedData = transform({
@@ -79,14 +79,14 @@ const transformedData = transform({
 //valueFields: []
 });
 
-console.log(transformedData);
+//console.log(transformedData);
 
 // 两种数据集格式转换
 const arrayInArray = fromObjectInArray(transformedData.list);
-console.log(arrayInArray);
-console.log(transportArrayInArray(arrayInArray));
-console.log(fromArrayInArray(arrayInArray));
-console.log(transportObjectInArray(transformedData.list));
+//console.log(arrayInArray);
+//console.log(transportArrayInArray(arrayInArray));
+//console.log(fromArrayInArray(arrayInArray));
+//console.log(transportObjectInArray(transformedData.list));
 
 
 
