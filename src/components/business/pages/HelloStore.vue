@@ -10,7 +10,7 @@
 
 <script>
 /* eslint-disable */
-import {manager, Store, Agent, blank} from '@/components/common';
+import {manager, Store, Agent, blank} from '@/components/vueFem2';
 
 //console.log(manager);
 

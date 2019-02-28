@@ -1,4 +1,4 @@
-import './appConfig.js';
+import './components/business/config/common.js';
 
 import Vue from 'vue';
 import App from './App.vue';

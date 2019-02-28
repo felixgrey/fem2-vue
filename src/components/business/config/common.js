@@ -1,12 +1,12 @@
-import {Agent, transform} from '@/components/common';
+import {Agent, transform} from '@/components/vueFem2';
 
-import '@/components/business/services/myService.js';
+import '../services/myService.js';
 
 // 沈阳行政区域数据
-import shenyangDistrictsData from '@/components/business/services/localData/shenyangDistrictsData.js';
+import shenyangDistrictsData from '../services/localData/shenyangDistrictsData.js';
 
 // 颜色图谱
-import colorsMap from '@/components/business/services/localData/colorsMap.js';
+import colorsMap from '../services/localData/colorsMap.js';
 
 // 加入到配置信息里
 Object.assign(transform.bmap.districts, shenyangDistrictsData);

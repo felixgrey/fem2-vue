@@ -7,7 +7,7 @@
 
 <script>
 	/* eslint-disable */
-	import Handsontable from '@/components/common/turboHandsontable';
+	import {Handsontable} from '@/components/vueFem2';
 
 	export default {
 		mounted() {

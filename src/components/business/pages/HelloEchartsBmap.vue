@@ -6,7 +6,7 @@
 
 <script>
 /* eslint-disable */
-import {transform, bmpApiReady, addBmapBoundary } from '@/components/common';
+import {transform, bmpApiReady, addBmapBoundary } from '@/components/vueFem2';
 import {syDistricts} from '@/components/business/services/localData/shenyangDistrictsData.js';
 
 const districtColors = transform.business.colorsMap.districts;

@@ -6,7 +6,7 @@
 
 <script>
 /* eslint-disable */
-import {transform, } from '@/components/common/fem2DataVisualization';
+import {transform, } from '@/components/vueFem2';
 
 const memberNames = transform.business.colorsMap.memberNames;
 const riskTypeList = Object.keys(memberNames);

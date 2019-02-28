@@ -6,7 +6,7 @@
 
 <script>
 /* eslint-disable */
-import {transform, bmpApiReady, addBmapBoundary } from '@/components/common/fem2DataVisualization';
+import {transform, bmpApiReady, addBmapBoundary } from '@/components/vueFem2';
 
 // 全局配置色彩列表
 // transform.echarts.COLORS = ["#26cdd8", '#3786ff', "#eec800", '#f5626f', '#9879ee'];

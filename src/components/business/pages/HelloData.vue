@@ -1,9 +1,10 @@
 <template>
+  <div></div>
 </template>
 
 <script>
 /* eslint-disable */
-import {transform} from '@/components/common/fem2';
+import {transform} from '@/components/vueFem2';
 
 const {
   AGGREGATES,  // 自带的聚合函数
