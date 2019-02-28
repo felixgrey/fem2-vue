@@ -13,7 +13,7 @@
 
 <script>
 	/* eslint-disable */
-	import { CodeMirror, babel } from '@/components/common/fem2Devtools';
+	import { CodeMirror, babel } from '@/components/common/ideForFem2';
 
 	export default {
 		mounted() {

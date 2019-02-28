@@ -7,7 +7,7 @@
 
 <script>
 	/* eslint-disable */
-	import Handsontable from '@/components/common/handsontable';
+	import Handsontable from '@/components/common/turboHandsontable';
 
 	export default {
 		mounted() {

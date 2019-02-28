@@ -1,11 +1,11 @@
 <template>
   <div id="app">
-    <HellohHandsontable />
+    <HelloHandsontable />
     <HelloCodemirror />
     <HelloStore />
     ========================================================================
-    <HelloRadar />
-    <HelloPie />
+    <HelloEchartsRadar />
+    <HelloEchartsPie />
     <HelloEchartsLba/>
     <HelloEchartsBmap />   
   </div>
@@ -13,13 +13,13 @@
 
 <script>
 /* eslint-disable */
-import HellohHandsontable from './components/business/pages/handsontable/HellohHandsontable.vue';
-import HelloCodemirror from './components/business/pages/codemirror/HelloCodemirror.vue';
-import HelloStore from './components/business/pages/store/HelloStore.vue';
-import HelloEchartsBmap from './components/business/pages/echarts/HelloEchartsBmap.vue';
-import HelloEchartsLba from './components/business/pages/echarts/HelloEchartsLba.vue';
-import HelloPie from './components/business/pages/echarts/HelloPie.vue';
-import HelloRadar from './components/business/pages/echarts/HelloRadar.vue';
+import HelloHandsontable from './components/business/pages/HelloHandsontable.vue';
+import HelloCodemirror from './components/business/pages/HelloCodemirror.vue';
+import HelloStore from './components/business/pages/HelloStore.vue';
+import HelloEchartsBmap from './components/business/pages/HelloEchartsBmap.vue';
+import HelloEchartsLba from './components/business/pages/HelloEchartsLba.vue';
+import HelloEchartsPie from './components/business/pages/HelloEchartsPie.vue';
+import HelloEchartsRadar from './components/business/pages/HelloEchartsRadar.vue';
 
 
 /*
@@ -38,13 +38,13 @@ export default {
     }
   },
   components: {
+  	HelloHandsontable,
+  	HelloCodemirror,
+  	HelloStore, 
     HelloEchartsBmap,
-    HelloEchartsLba,
-    HelloStore,  
-    HelloPie,
-    HelloRadar,
-    HelloCodemirror,
-    HellohHandsontable
+    HelloEchartsLba,   
+    HelloEchartsPie,
+    HelloEchartsRadar,
   }
 }
 </script>

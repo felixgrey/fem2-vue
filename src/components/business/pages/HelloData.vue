@@ -1,3 +1,7 @@
+<template>
+</template>
+
+<script>
 /* eslint-disable */
 import {transform} from '@/components/common/fem2';
 
@@ -163,3 +167,9 @@ console.log(transportObjectInArray(transformedData.list));
     ]
   }
 */
+
+export default {};
+</script>
+
+<style>
+</style>

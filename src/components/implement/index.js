@@ -4,9 +4,10 @@ import BootstrapVue from 'bootstrap-vue';
 import 'bootstrap/dist/css/bootstrap.css';
 import 'bootstrap-vue/dist/bootstrap-vue.css';
 import ECharts from 'vue-echarts';
-import { Agent, monkey, blank} from '@/components/common/fem2';
-export * from '@/components/common/fem2';
-export * from '@/components/common/fem2DataVisualization';
+import { Agent, monkey, blank} from '../common/fem2';
+
+export * from '../common/fem2';
+export * from '../common/fem2DataVisualization';
 
 Vue.use(BootstrapVue);
 Vue.component('v-chart', ECharts);
