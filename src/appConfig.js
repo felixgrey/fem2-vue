@@ -1,5 +1,5 @@
 import {Agent, transform} from '@/components/common';
-import '@/components/business/services/apiService.js';
+
 import '@/components/business/services/myService.js';
 
 // 沈阳行政区域数据
