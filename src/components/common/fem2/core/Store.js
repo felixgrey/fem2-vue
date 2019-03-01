@@ -3,8 +3,70 @@ import {context, uniRandom, blank, same, noValue, errorLog, removeArrayItem} fro
 
 const STATUS = ['undefined','loading','locked','set']; // 状态枚举
 const EMITTERMETHODS = ['on', 'once', 'emit', 'off']; // emitter的api
-const CONTROLLERMETHODS = ['on', 'when', 'executor','watch']; // controller的api
 const STOPRUN = context.STOPRUN;
+
+class Controller {
+  constructor(store) {
+    this.invalid = false;
+    this.offList = [];
+    this.store = store;
+  }
+  
+  on = (...args) => {
+    if(this.invalid || this.store.invalid) { 
+      return blank;
+    }
+    const off = this.store.on(...args);
+    this.offList.push(off);
+    return off;
+  }
+  
+  once = (...args) => {
+    if(this.invalid || this.store.invalid) { 
+      return blank;
+    }
+    const off = this.store.once(...args);
+    this.offList.push(off);
+    return off;
+  }
+  
+  when = (...args) => {
+    if(this.invalid || this.store.invalid) { 
+      return blank;
+    }
+    const off = this.store.when(...args);
+    this.offList.push(off);
+    return off;
+  }
+  
+  watch = (...args) => {
+    if(this.invalid || this.store.invalid) { 
+      return blank;
+    }
+    const off = this.store.watch(...args);
+    this.offList.push(off);
+    return off;
+  }
+  
+  executor = (...args) =>  {
+    if(this.invalid || this.store.invalid) { 
+      return blank;
+    }
+    const off = this.store.executor(...args);
+    this.offList.push(off);
+    return off;
+  }
+  
+  destroy = () => {
+    if(this.invalid) { 
+      return;
+    }
+    this.invalid = true;
+    this.offList.forEach(off => off());
+    this.store = {invalid: true};
+    this.offList = null; 
+  }  
+}
 
 class Store {  
   constructor(config = {}) {
@@ -134,8 +196,12 @@ class Store {
   }
   
   defineModel(name){
+    if (this.invalid) { 
+      return;
+    }
+
     const model = this.model;
-    if(model.hasOwnProperty(name)) {
+    if (model.hasOwnProperty(name)) {
       return;
     }
     
@@ -194,27 +260,7 @@ class Store {
     if(this.invalid){ 
       return;
     }
-    
-    let offList = [];   
-    const controller = {
-      store: this,
-      destroy: () => {
-        if(offList) {
-          offList.forEach(off => off());
-          offList = null;
-        }   
-      }
-    };
-    
-    CONTROLLERMETHODS.forEach(fun => {
-      controller[fun] = (...args) => {
-        const off = this[fun](...args);
-        offList.push(off);
-        return off;
-      }
-    });
-    
-    return controller;    
+    return new Controller(this);
   }
   
   _add(scheme, name, fun){
@@ -280,8 +326,7 @@ class Store {
     this._event[(_once ? 'once' : 'on')](name, callback);
  
     const off = (deleting = false) => {
-      this._off(name, callback);
-      
+      this._off(name, callback);     
       if(!deleting){
         removeArrayItem(this._data[`$off:${name}`] || [], off);
       }
@@ -304,10 +349,9 @@ class Store {
     if(this.invalid || noValue(name)) {
       return;
     }
-
     this._event.off(name, callback);
-    if(callback._callback){
-      this._event.off(name, callback._callback);
+    if(callback[`_warpedCallback${this.uniKey}`]){
+      this._event.off(name, callback[`_warpedCallback${this.uniKey}`]);
     }
   }
   
@@ -341,8 +385,8 @@ class Store {
     }
     
     name = [].concat(name); 
-    
-    const cbkOuter = () => {
+
+    const warpedCallback = () => {
       const values = [];
       for (let _name of name){
         if(!this.has(_name)){
@@ -352,13 +396,13 @@ class Store {
       }
       callback(...values);
     }
-    
-    callback._callback = cbkOuter;
-    cbkOuter();
+
+    callback[`_warpedCallback${this.uniKey}`] = warpedCallback;
+    warpedCallback();
     
     let offList = [];
     for (let _name of name) {
-      let off = this[(_once ? 'once' : 'on')](_name, cbkOuter);
+      let off = this[(_once ? 'once' : 'on')](_name, warpedCallback);
       offList.push(off);
     }
     
@@ -366,6 +410,7 @@ class Store {
       offList && offList.forEach(off => off());
       offList = null;
     }
+
   }
 
   has(name) {

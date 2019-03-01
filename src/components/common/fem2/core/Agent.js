@@ -123,6 +123,7 @@ Object.defineProperty(Agent, 'Emitter', {
   set: function (value){
     context._Emitter = value;
     manager = new Store();
+    manager.name = '$manager';
     manager.destroy = blank;
     Agent.manager = context.manager = manager;  
   },
