@@ -8,16 +8,6 @@ const STOPRUN = context.STOPRUN;
 
 class Store {  
   constructor(config = {}) {
-    this.uniKey = uniRandom();
-    this.dataNames = [];
-    
-    Object.defineProperty(this, 'model', {
-      value: {},
-      enumerable: false,
-      configurable: false,
-      writable: false
-    });
-    
     this._event = new context._Emitter();
     EMITTERMETHODS.forEach(funName => {
       if(typeof this._event[funName] !== 'function'){
@@ -25,17 +15,16 @@ class Store {
       }
     });
     
+    this.uniKey = uniRandom();
+    this.dataNames = [];
+    this.name = noValue(config.$name) ? `$store:${this.uniKey}`: `$store:${config.$name}`;
+    this.model = {};
+
     this._config = config;
     this._invalid = false;
     this._data = {};
     this._updateTimeout = null;
 
-    if(!noValue(config.$name)){
-      this.name = `$store:${config.$name}`;
-    }else {
-      this.name = `$store:${this.uniKey}`;
-    }
-    
     if(!noValue(config.$checkSame)){
       this._checkSame = config.$checkSame;
     }
