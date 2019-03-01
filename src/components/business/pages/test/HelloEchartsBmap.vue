@@ -11,6 +11,8 @@ import {syDistricts} from '@/components/business/services/localData/shenyangDist
 
 const districtColors = transform.business.colorsMap.districts;
 
+
+
 // 测试数据
 let data = [];
 for (let i = 0 ; i < 8; i++) {
@@ -67,12 +69,12 @@ chartOption.executor = {
 					points.push(ll);
 			});
 			
-			Object.defineProperty(window,'yhsc',{
-				set:function(){
-					console.log(points.join(','));
-					points = [];
-				}
-			})
+//			Object.defineProperty(window,'yhsc',{
+//				set:function(){
+//					console.log(points.join(','));
+//					points = [];
+//				}
+//			})
 
       syDistricts.forEach(name => {
       	// 添加行政区划

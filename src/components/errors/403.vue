@@ -1,5 +1,7 @@
 <template>
-    <div>403</div>
+    <div>
+      <h1>403 禁止访问这个页面</h1>
+    </div>
 </template>
 
 <script>

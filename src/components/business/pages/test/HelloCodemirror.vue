@@ -14,9 +14,13 @@
 <script>
 	/* eslint-disable */
 	import { CodeMirror, babel } from '@/components/vueFem2';
+	import _CodemirrorInHeader from './_CodemirrorInHeader.vue';
 	
 	export const $Doc = {
-	  path: '/HelloCodemirror',
+	  header:{
+	    title: '代码',
+	    compnents: [_CodemirrorInHeader]
+	  }
 	}
 
 	export default {

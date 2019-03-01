@@ -5,7 +5,7 @@ import VueRouter from 'vue-router';
 import 'bootstrap/dist/css/bootstrap.css';
 import 'bootstrap-vue/dist/bootstrap-vue.css';
 import ECharts from 'vue-echarts';
-import { Agent, monkey, blank} from './common';
+import { Agent, monkey, blank, routesMap} from './common';
 
 export * from './common';
 
@@ -47,7 +47,7 @@ Agent.Emitter= class JqEvent {
 // 定义组件的修饰器
 Agent.component = (agentName, option = {}) => {
   if(!agentName) {
-    throw new Error('Agent.component require (agentName)');
+    throw new Error('must has agentName: Agent.component(agentName)');
   } 
   
   return (Component) => {    
@@ -55,42 +55,42 @@ Agent.component = (agentName, option = {}) => {
     if(typeof Component === 'function'){
       Component = new Component().vue;
     }
-    
-    // 视图原型，代理onModelChange方法，刷新组件
-    let $view = option.$view || {};
-    $view.onModelChange = monkey($view.onModelChange, null, function(result, [model = {}]) {
-      this.$vue.model = model;
-      // 必须根据具体框架确定$modelChange触发时机
-      $view.store.emit(`$modelChange:${$view.uniKey}`);
-      return result;
-    });
-    option.$view = $view;
-    $view = Agent.createView(agentName, option);
 
     // 代理vue生命周期
-    Component.created = monkey(Component.created, null, function(result) {
-        $view.$vue = this;
-        $view.initView({$name: '$storeView'}, option.$store || this.store);
-        
-        this.$View = $view;
-        this.$Store = $view.store;
-        this.$Controller = $view.controller;
-        this.$Model = $view.store.model;
+    Component.created = monkey(Component.created, null, function(result) {      
+      const _vue = this;
+      const myViewOption = {...option};
+      const $viewProtoType = myViewOption.$view = myViewOption.$view || {};
+      
+       // 视图原型，代理onModelChange方法，刷新组件
+      $viewProtoType.onModelChange = monkey($viewProtoType.onModelChange, null, function(result, [model = {}]) {
+        // 更新vue数据
+        _vue.model = model;
+        // 必须根据具体框架确定$modelChange触发时机
+        $viewProtoType.store && $viewProtoType.store.emit(`$modelChange:${this.uniKey}`);
         return result;
+      });
+
+      const $view = this.$View = Agent.createView(agentName, myViewOption);
+      $view.initView({$name: '$storeView'}, myViewOption.$store || this.store); // 定义在props里的store
+      
+      this.$Store = $view.store || null;
+      this.$Controller = $view.controller || null;
+      this.$Model = this.$Store ? $view.store.model : null;
+      
+      return result;
     });
     
     Component.mounted = monkey(Component.mounted, null, function(result) {
         if (result !== false) {
-          $view.viewReady();
+          this.$View && this.$View.viewReady();
         }
         return result;
     });
     
     Component.beforeDestroy = monkey(Component.beforeDestroy, null, function(result) {
-        $view.viewOff();
-        $view.$vue = null;
-        this.$view = null;
-        $view = null;
+        this.$View && this.$View.viewOff();
+        this.$View = null;
         return result;
     });
     
@@ -128,10 +128,29 @@ Agent.ajax = function(url, data, option = {}){
       },
     }, option)); 
   });
-}
+};
 
 // vue路由在根实例创建后注入
 export function injectRouter(_vue) {
+  
+  _vue.$router.beforeEach(({path}, from, next) => {
+    if(path === '/403' || path === '/404' || path === '/error') {
+      next();
+      return;
+    }
+    
+    if(!routesMap[path]) {
+      next('/404');
+      return;
+    }
+    
+    next();
+  });
+  
+  _vue.$router.afterEach( to => {
+     Agent.manager.emit('routeChange', to.path);
+  });
+
   Agent.router = (path, option = {}) => {
     if(option.target === '_blank') {
       // TODO: -
@@ -140,5 +159,6 @@ export function injectRouter(_vue) {
     } else if (typeof path === 'number') {
       _vue.$router.go(path);
     }
+   
   }
 }

@@ -1,7 +1,7 @@
-import {manager, Agent, localBaseUrl} from '@/components/vueFem2';
+import {Agent, localBaseUrl} from '@/components/vueFem2';
 /* eslint-disable */
 
-manager.executor('a.b.c', async function({d,f}){
+Agent.manager.executor('a.b.c', async function({d,f}){
   
   return new Promise((r)=>{
     setTimeout(()=>{

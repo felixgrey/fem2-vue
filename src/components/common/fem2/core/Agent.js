@@ -5,9 +5,13 @@ const STOPRUN = context.STOPRUN;
 let manager = null;
 
 class Agent {
-  constructor(config, viewKey, controller, view) {
-    if(!config || !viewKey|| !controller ){
-      throw new Error('agent must has config, viewKey, and controller');
+  
+  controller = null;
+  store = null;
+  
+  constructor(config, viewKey, controller = null, view) {
+    if(!config || !viewKey || !view){
+      throw new Error('agent must has config, viewKey, and view');
     }
 
     this._invalid = false;
@@ -17,8 +21,12 @@ class Agent {
     this._config = config;
     
     this.uniKey = uniRandom();
-    this.controller = controller;
-    this.store = controller.store;
+    
+    if(controller) {
+      this.controller = controller;
+      this.store = controller.store;
+    }
+    
     this.view = view;
     
     if(!noValue(config.$name)){
@@ -105,7 +113,8 @@ class Agent {
       return;
     }
     this._invalid = true;
-    this.controller.destroy();
+    this.controller && this.controller.destroy();
+    this.controller = null;
   }
 }
 
@@ -125,11 +134,14 @@ Object.defineProperty(Agent, 'Emitter', {
 context._declareAgent = {
   $store: class StoreAgent extends Agent {
     init() {
+      this.store = this.view.store = new Store(this.view._option.$storeConfig);
+      this.controller = this.view.controller = this.store.controller();
+      
       const dataNames = this.store.dataNames;
       const {when, on} = this.controller;
       
       const updateViewModel = () => {
-        this.updateViewModel()
+        this.updateViewModel();
       };
       
       dataNames.forEach(name => {
@@ -150,6 +162,12 @@ context._declareAgent = {
         model[dataName3] = this.store.model[dataName3];
       });     
       return Object.freeze(model);
+    }
+    
+    destroy(){
+      super.destroy();
+      this.store && this.store.destroy();
+      this.store = null;
     }
   }
 };
@@ -214,8 +232,12 @@ Agent.createView  = (name = null, option = {}) => {
     this._config = config;
     
     this.uniKey = uniRandom();
-    this.store = store;
-    this.controller = store.controller();
+    
+    if(store){
+      this.store = store;
+      this.controller = store.controller();
+    }
+    
     this.size = {w: 0, h: 0};
  
     return [config, store];
@@ -230,7 +252,7 @@ Agent.createView  = (name = null, option = {}) => {
       return STOPRUN;
     }
     this._ready = true;
-    this.store.emit(`$viewReady:${this.uniKey}`);
+    this.store && this.store.emit(`$viewReady:${this.uniKey}`);
     return args;
   }, viewReadyAfter);
     
@@ -242,7 +264,7 @@ Agent.createView  = (name = null, option = {}) => {
       errorLog(`view change must after init.`);
       return STOPRUN;
     }
-    this.store.emit(`$viewChange:${this.uniKey}`);
+    this.store && this.store.emit(`$viewChange:${this.uniKey}`);
     return args;
   }, viewChangeAfter);
     
@@ -250,8 +272,11 @@ Agent.createView  = (name = null, option = {}) => {
     if(this._invalid){
       return STOPRUN;
     }
-    this.store.emit(`$viewOff:${this.uniKey}`);
     this._invalid = true;
+    this.store && this.store.emit(`$viewOff:${this.uniKey}`);
+    this.controller && this.controller.destroy();
+    this.store = null;
+    this.controller = null;
     return args;
   }, viewOffAfter);  
   
@@ -270,15 +295,19 @@ Agent.createView  = (name = null, option = {}) => {
   return view;
 };
 
-Agent.store = (config, option={}) => {
+Agent.store = (config, option= {}) => {
   if(!config) {
     throw new Error('Agent.store require (config)');
   }
   return (Component) => {
-    option.$store = new Store(config);
+    option = {...option};
+    option.$store = null;
+    option.$storeConfig = config;
     return Agent.component('$store', option)(Component);
   } 
 }
+
+Agent.redirectMap = {};
 
 Agent.router = () => {
   errorLog('must implement Agent.router first');
@@ -294,7 +323,6 @@ Agent.component = () => {
 
 export * from './Utils';
 export {
-  manager,
   Store,
   Agent
 };

@@ -1,5 +1,7 @@
 <template>
-    <div>error</div>
+    <div>
+      <h1>出错了</h1>
+    </div>
 </template>
 
 <script>
