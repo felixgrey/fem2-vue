@@ -134,6 +134,8 @@ Agent.ajax = function(url, data, option = {}){
 export function injectRouter(_vue) {
   
   _vue.$router.beforeEach(({path}, from, next) => {
+    Agent.manager.emit('beforeRouteChange', path);
+    
     if(path === '/403' || path === '/404' || path === '/error') {
       next();
       return;
@@ -148,7 +150,7 @@ export function injectRouter(_vue) {
   });
   
   _vue.$router.afterEach( to => {
-     Agent.manager.emit('routeChange', to.path);
+     Agent.manager.emit('routeChanged', to.path);
   });
 
   Agent.router = (path, option = {}) => {

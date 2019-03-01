@@ -42,7 +42,7 @@
       };
       
       setMe(window.location.hash.replace('#',''));
-      this.myController.on('routeChange', setMe);
+      this.myController.on('routeChanged', setMe);
 
     },
     beforeDestroy(){
