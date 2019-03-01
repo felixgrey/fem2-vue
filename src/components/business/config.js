@@ -1,4 +1,4 @@
-import {transform} from '@/components/vueFem2';
+import {Agent, transform} from '@/components/vueFem2';
 
 import './services/myService.js';
 
@@ -15,6 +15,8 @@ Object.assign(transform.bmap.districts, shenyangDistrictsData);
 transform.business = {
   colorsMap
 }
+
+Agent.defaultHeaderTitle = '一个默认的标题';
 
 // 百度地图API版本，默认3.0
 // transform.bmapVersion = '3.0'; 

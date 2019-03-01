@@ -5,7 +5,7 @@ import VueRouter from 'vue-router';
 import 'bootstrap/dist/css/bootstrap.css';
 import 'bootstrap-vue/dist/bootstrap-vue.css';
 import ECharts from 'vue-echarts';
-import { Agent, monkey, blank, routesMap} from './common';
+import { Agent, monkey, blank} from './common';
 
 export * from './common';
 
@@ -130,37 +130,5 @@ Agent.ajax = function(url, data, option = {}){
   });
 };
 
-// vue路由在根实例创建后注入
-export function injectRouter(_vue) {
-  
-  _vue.$router.beforeEach(({path}, from, next) => {
-    Agent.manager.emit('beforeRouteChange', {to: path, from: from.path});
-    
-    if(path === '/403' || path === '/404' || path === '/error') {
-      next();
-      return;
-    }
-    
-    if(!routesMap[path]) {
-      next('/404');
-      return;
-    }
-    
-    next();
-  });
-  
-  _vue.$router.afterEach( to => {
-     Agent.manager.emit('routeChanged', to.path);
-  });
+// Agent.router相关在vue根实例创建后注入
 
-  Agent.router = (path, option = {}) => {
-    if(option.target === '_blank') {
-      // TODO: -
-    } else if (typeof path === 'string') {
-      _vue.$router.push(path);
-    } else if (typeof path === 'number') {
-      _vue.$router.go(path);
-    }
-   
-  }
-}

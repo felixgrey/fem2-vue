@@ -15,14 +15,16 @@
   export default {
     data: function(){
       return {
-        menuData: (routes || []).map(item => {
+        menuData: (routes || []).filter(item => item.path.indexOf(':') === -1).map(item => {
           const {path, _doc = {}} = item;
           const {name = path} = (_doc.menu || {});
           return {path, name};
         })
       }
     },
-    mounted(){}
+    mounted(){
+//    console.log(this.menuData)
+    }
   }
 </script>
 

@@ -153,13 +153,12 @@ context._declareAgent = {
     createModel() {
       const model = {};
       this.store.dataNames.forEach(dataName => {
-        const dataName1 = `${dataName}Data`;
+        const dataName1 = `${dataName}List`;
         const dataName2 = `${dataName}Status`;
-        const dataName3 = `${dataName}First`;
         
         model[dataName1] = this.store.model[dataName1];
         model[dataName2] = this.store.model[dataName2];
-        model[dataName3] = this.store.model[dataName3];
+        model[dataName] = this.store.model[dataName];
       });     
       return Object.freeze(model);
     }
@@ -307,7 +306,9 @@ Agent.store = (config, option= {}) => {
   } 
 }
 
-Agent.redirectMap = {};
+Agent.getRouterParams = () => {
+  errorLog('must implement Agent.getRouterParams first');
+};
 
 Agent.router = () => {
   errorLog('must implement Agent.router first');

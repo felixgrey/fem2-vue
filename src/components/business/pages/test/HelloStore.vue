@@ -1,9 +1,9 @@
 <template>
 	<div>
 		<div>{{msg}}</div>
-		<div>{{myData}} {{model.data1Data}}</div>
-		<div>{{model.data2First}} {{model.data2Data}}</div>
-		<div>{{model.data3Status}} {{model.data3Data}}</div>
+		<div>{{myData}} {{model.data1List}}</div>
+		<div>{{model.data2}} {{model.data2List}}</div>
+		<div>{{model.data3Status}} {{model.data3List}}</div>
 	</div>
 	
 </template>
@@ -108,6 +108,7 @@ import {manager, Store, Agent, blank} from '@/components/vueFem2';
 //console.log(store.run('exe1',1,2,3,4))
 
 export const $Doc = {
+    path:'/aa/:b',
     header:{
       title: '测试Store',
     },
@@ -153,15 +154,26 @@ class Hello extends blank {
 				myData: 'haha'
 			};
 		},
-		mounted: function(){
+		beforeDestroy() {
+		  this.controller.destroy();
+		},
+		mounted() {
+		  
+		  this.controller= Agent.manager.controller();
+		  
+		  this.controller.watch('routeModel', (routeModel) =>{
+		    console.log(routeModel, Agent.getRouterParams() === routeModel)
+		  });
+		  
+//		  console.log(Agent.getRouterParams())
 			
 			// 为了避免和 vuex 的$store冲突，用大写S,this.model为渲染数据,this.$Model是this.$Store.model的别名
 			// console.log(this.model, this.$View,this.$Store, this.$Controller, this.$Model)
 			
 			this.$Controller.on(`$modelChange:${this.$View.uniKey}`,() => {
 				const {
-					data1Data, // data1数据数组
-					data1First, // data1数据数组第一条
+					data1List, // data1数据数组
+					data1, // data1数据数组第一条
 					data1Status // data1数据状态
 				} = this.model;
 				//console.log({data1Data, data1First, data1Status});
@@ -171,14 +183,14 @@ class Hello extends blank {
 //				this.model.data1Data = ['ssssss']  // this.model是只读属性，必须通过store修改数据
 //				this.$Model.data1Data = ['ssssss','dddddd']; 在data3是loading状态的时候作为依赖的data1锁定不能修改
 				
-				this.$Model.data2Data = ['ssssss','dddddd']; // 通过store的model直接赋值
-				this.$Model.data2Data = data => data.map(item => `${item}123`); // 如果传入函数则可以用于更新数据
-				this.$Model.data2First = value => `${value}_$$$`; // 更新第一条数据
+				this.$Model.data2List = ['ssssss','dddddd']; // 通过store的model直接赋值
+				this.$Model.data2List = data => data.map(item => `${item}123`); // 如果传入函数则可以用于更新数据
+				this.$Model.data2 = value => `${value}_$$$`; // 更新第一条数据
 				this.$Model.data2Status = 'locked'; // 修改状态
 				
 				const {
-					data2Data, // data2数据数组
-					data2First, // data2数据数组第一条
+					data2List, // data2数据数组
+					data2, // data2数据数组第一条
 					data2Status // data2数据状态
 				} = this.$Model; //注意是store的model
 				//console.log({data2Data, data2First, data2Status});

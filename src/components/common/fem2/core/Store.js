@@ -1,16 +1,22 @@
 
 import {context, uniRandom, blank, same, noValue, errorLog, removeArrayItem} from './Utils';
 
-const STATUS = ['undefined','loading','locked','set'];
-const EMITTERMETHODS = ['on', 'once', 'emit', 'off'];
-const REGISTERMETHODS = ['on', 'when', 'executor'];
+const STATUS = ['undefined','loading','locked','set']; // 状态枚举
+const EMITTERMETHODS = ['on', 'once', 'emit', 'off']; // emitter的api
+const CONTROLLERMETHODS = ['on', 'when', 'executor','watch']; // controller的api
 const STOPRUN = context.STOPRUN;
 
 class Store {  
   constructor(config = {}) {
     this.uniKey = uniRandom();
     this.dataNames = [];
-    this.model = {};
+    
+    Object.defineProperty(this, 'model', {
+      value: {},
+      enumerable: false,
+      configurable: false,
+      writable: false
+    });
     
     this._event = new context._Emitter();
     EMITTERMETHODS.forEach(funName => {
@@ -144,7 +150,8 @@ class Store {
       return;
     }
     
-    Object.defineProperty(model, `${name}Data`, {
+    //全部数据
+    Object.defineProperty(model, `${name}List`, {
       configurable: true,
       enumerable: true,
       get: () => {
@@ -158,8 +165,9 @@ class Store {
         this._set(name, value);
       }
     });
-    
-    Object.defineProperty(model, `${name}First`, {
+
+    // 第一条数据
+    Object.defineProperty(model, name, {
       configurable: true,
       enumerable: true,
       get: () => {
@@ -168,14 +176,19 @@ class Store {
       set: (value) => {
         const oldData = this._get(name);
         const oldValue = oldData[0];
-        if(typeof value === 'function') {
+
+        if (typeof value === 'function') {
           value = value(oldValue) || oldValue;
         }
-        oldData.splice(0, 1, value);
-        this._set(name, oldData);
+        
+        if (!this._checkSame(oldValue, value)) {
+          oldData.splice(0, 1, value);
+          this._set(name, oldData, true);
+        }
       }
     });
-    
+
+    // 数据状态
     Object.defineProperty(model, `${name}Status`, {
       configurable: true,
       enumerable: true,
@@ -204,7 +217,7 @@ class Store {
       }
     };
     
-    REGISTERMETHODS.forEach(fun => {
+    CONTROLLERMETHODS.forEach(fun => {
       controller[fun] = (...args) => {
         const off = this[fun](...args);
         offList.push(off);
@@ -321,6 +334,17 @@ class Store {
 
     return this.when(name, callback, true);
   }
+  
+  watch(name, callback, _once = false){
+    if(this.invalid || noValue(name)){
+      return blank;
+    }
+    name = [].concat(name)[0];
+    
+    return this.when(name, ([item]) => {
+      callback(item);
+    }, _once);
+  }
 
   when(name, callback, _once = false) {
     if(this.invalid || noValue(name)){
@@ -388,7 +412,6 @@ class Store {
     }
   
     value = [].concat(value);
-    
     if(!_force && this._checkSame(this._data[`$data:${name}`], value)){
       return;
     }
@@ -560,7 +583,6 @@ class Store {
     }
     this.invalid = true; 
     this._data = null;
-    this.model = null;
     this.dataNames = null;
   }
   

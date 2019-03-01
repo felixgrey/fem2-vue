@@ -1,7 +1,6 @@
 
 export const routes = [];
-export const routesMap = {};
-      
+     
 export default function(pageExportsContext) {
   if(typeof pageExportsContext !== 'function' || pageExportsContext.name !== 'webpackContext') {
     throw new Error('only webpackContext can use autoRouter');
@@ -18,10 +17,9 @@ export default function(pageExportsContext) {
     // 获取模块输出
     const exports = pageExportsContext(fileName);
     // 模块自定义或默认的路由配置
-    const {path = `/${defaultName}`} = exports.$Doc || {};
-    const _r = routesMap[path] = {path, component: exports.default, _doc: exports.$Doc};
-    routes.push(_r);
-    
+    const _doc = exports.$Doc === undefined ? {} : exports.$Doc;
+    const {path = `/${defaultName}`} = _doc || {};   
+    routes.push({path, component: exports.default, _doc});  
   });
   
   return routes;

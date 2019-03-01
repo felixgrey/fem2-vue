@@ -9,7 +9,7 @@
 <script>
   /* eslint-disable */
   import Vue from 'vue/dist/vue.common.js';
-  import {Agent, routesMap} from '@/components/vueFem2';
+  import {Agent} from '@/components/vueFem2';
 
   export default {
     data: function() {
@@ -19,15 +19,19 @@
       }
     },
     mounted() {
+      // 获取路由配置信息
+      const routesMap = {};    
+      Agent.routes.forEach(item => {
+        routesMap[item.path] = (item._doc || {}).header || {};
+      });
 
       this.myController = Agent.manager.controller();
       this.componentInHeader = [];
-      
-      const setMe = path => {
-        
-        const {title = path, compnents = []} = ((routesMap[path] || {})._doc || {}).header || {};
-        this.title = title;
-        
+
+      const setMe = (info) => {
+        // 获得配置信息
+        const {title = Agent.defaultHeaderTitle, compnents = []} = routesMap[info.matched] || {};
+
         // 销毁组件和dom节点
         this.componentInHeader.forEach(_vue => _vue.$destroy());
         this.componentInHeader = [];
@@ -39,13 +43,15 @@
           this.$refs.componentContainer.appendChild(span);
           this.componentInHeader.push(new Vue({render: h => h(Compnent)}).$mount(span));
         });
+        
+        //设置标题
+        this.title = title;
       };
       
-      setMe(window.location.hash.replace('#',''));
-      this.myController.on('routeChanged', setMe);
+      this.myController.watch('routeModel', setMe);
 
     },
-    beforeDestroy(){
+    beforeDestroy() {
       this.myController.destroy();
       this.componentInHeader && this.componentInHeader.forEach(_vue => _vue.$destroy());
       this.componentInHeader = null;
