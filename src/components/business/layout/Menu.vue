@@ -11,15 +11,18 @@
 <script>
   /* eslint-disable */
   import {routes} from '@/components/vueFem2';
+  
+  const _routes = (routes || []);
+  const _defaultIndex = _routes.length;
 
   export default {
     data: function(){
       return {
-        menuData: (routes || []).filter(item => item.path.indexOf(':') === -1).map(item => {
+        menuData: _routes.filter(item => item.path.indexOf(':') === -1).map(item => {
           const {path, _doc = {}} = item;
-          const {name = path} = (_doc.menu || {});
-          return {path, name};
-        })
+          const {name = path, index = _defaultIndex} = (_doc.menu || {});
+          return {path, name, index};
+        }).sort((a, b)=> (a.index - b.index))
       }
     },
     mounted(){

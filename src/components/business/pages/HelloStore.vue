@@ -108,14 +108,14 @@ import {manager, Store, Agent, blank} from '@/components/vueFem2';
 //console.log(store.run('exe1',1,2,3,4))
 
 export const $Doc = {
-    path:'/aa/:b',
-    header:{
-      title: '测试Store',
-    },
-    menu:{
-      name: '测试store链接'
-    }
+  path:'/aa/:b',
+  header:{
+    title: '测试Store',
+  },
+  menu:{
+    name: '测试store链接'
   }
+};
 
 export default @Agent.store({
 	data1:{

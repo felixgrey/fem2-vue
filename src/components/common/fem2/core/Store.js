@@ -435,6 +435,12 @@ class Store {
   _checkSame(a, b) {
     return JSON.stringify(a) === JSON.stringify(b);
   }
+  
+  setDataSets(dataSets, _force = false){
+    Object.keys(dataSets).forEach(name => {
+      this._set(name, dataSets[name], _force);
+    });
+  }
 
   _set(name, value, _force = false) {
     if(this.invalid || noValue(name)) {

@@ -4,7 +4,7 @@
 
 <script>
 /* eslint-disable */
-import {transform} from '@/components/vueFem2';
+import {transform, fromStructInArray} from '@/components/vueFem2';
 
 const {
   AGGREGATES,  // 自带的聚合函数
@@ -168,6 +168,97 @@ const arrayInArray = fromObjectInArray(transformedData.list);
     ]
   }
 */
+
+export const $Doc = {
+  path:'/',
+  header:{
+    title: '测试Data',
+  },
+  menu:{
+    name: '测试Data',
+    index: 0
+  }
+};
+
+
+const structData = [
+  {
+    id:'asdf',
+    name:'赵一伤',
+    school:{
+      name:'小学',
+      room:{
+        code:'1-2-3'
+      }
+    }
+  },
+  {
+    id:'ddd',
+    name:'钱二败',
+    school:{
+      name:'小sss学',
+      room:{
+        code:'1-43'
+      }
+    }
+  },
+  {
+    id:'eee',
+    name:'孙三毁',
+    school:null
+  },
+  4,
+  null,
+  {
+    id:'eee',
+    name:['孙三毁', '孙四毁'],
+  },
+]
+
+const list = fromStructInArray(structData, {
+  student:[
+    {
+      from: 'id',
+      to:'id'
+    },
+    {
+      from: 'name',
+      to:'name'
+    },
+    {
+      from: 'school.room.code',
+      to:'room',
+      default: '0-0-0'
+    },
+    {
+      from: 'aa.bb.cc',
+      to:'dd'
+    },
+  ],
+  room:[
+    {
+      from: 'id',
+      to:'id'
+    },
+    {
+      from: 'name.1',
+      to:'name1'
+    },
+    {
+      from:'school.name',
+      to:'school'
+    },
+    {
+      from:'school.room.code',
+      to:'room'
+    },
+  ]
+});
+  
+console.log(list);
+
+
+
 
 export default {};
 </script>

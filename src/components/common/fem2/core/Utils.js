@@ -50,8 +50,8 @@ export const localBaseUrl = (() => {
 })();
 
 
-const uniBaseIndex = Date.now();
-let uniBaseIndexNext = 0;
+const uniBaseIndex = Math.random()*10e16;
+let uniBaseIndexNext = 1;
 export function uniRandom() {
   return uniBaseIndex + (uniBaseIndexNext++); 
 }
