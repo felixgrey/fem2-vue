@@ -3,3 +3,4 @@ export * from './fem2DataVisualization';
 export * from './turboHandsontable';
 export * from './turboTreegrid';
 export * from './autoRouter';
+export * from './codeBabelMirror';

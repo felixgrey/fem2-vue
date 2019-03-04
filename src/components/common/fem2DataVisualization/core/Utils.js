@@ -96,7 +96,7 @@ transform.fromStructInArray = function (list = [], option) {
         const froms = from.split('|');
         let value;
         for (let _from of froms) {
-          value = traceObject(item, from);
+          value = traceObject(item, _from);
           if(value !== undefined){
             break;
           }
