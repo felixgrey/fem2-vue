@@ -55,7 +55,7 @@ export function mergeConfig(obj ={}, cfg = {}, defaultValue = {}) {
   return obj;
 }
 
-function traceObjct(obj, trace) {
+export function traceObject(obj, trace) {
   if (typeof trace === 'string') {
     trace = trace.split('.');
   }
@@ -68,7 +68,7 @@ function traceObjct(obj, trace) {
   if (!trace.length) {
     return value;
   }
-  return traceObjct(value, trace);
+  return traceObject(value, trace);
 }
 
 export function fromStructInArray(list = [], option) {
@@ -93,7 +93,7 @@ export function fromStructInArray(list = [], option) {
       const fields = option[name];
       fields.forEach(fieldMap => {
         const {from, to, default: _default, set} = fieldMap;
-        let value = traceObjct(item, from);
+        let value = traceObject(item, from);
         value = set ? set(value, item) : value;
         value = value === undefined ? _default : value;
         _item[to] = value;

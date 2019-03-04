@@ -170,13 +170,12 @@ const arrayInArray = fromObjectInArray(transformedData.list);
 */
 
 export const $Doc = {
-  path:'/',
-  header:{
-    title: '测试Data',
-  },
-  menu:{
-    name: '测试Data',
-    index: 0
+  layout:{
+    show:{
+      navigation: true,
+      header: true,
+      footer: true
+    }
   }
 };
 

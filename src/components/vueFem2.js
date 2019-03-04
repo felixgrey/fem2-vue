@@ -14,7 +14,7 @@ Vue.use(VueRouter);
 Vue.component('v-chart', ECharts);
 
 // 随机函数名
-const _callback =`_warpedCallback${Date.now()}`;
+const _callback =`_wrapedEmitterCallback${Date.now()}`;
 
 // jquery实现事件发射器
 Agent.Emitter= class JqEvent {
@@ -22,7 +22,7 @@ Agent.Emitter= class JqEvent {
     this.core = $({});
   }
   // callback匹配jquery参数格式
-  _warpedCallback(callback){
+  _wrapedCallback(callback){
     const warpedCallback = (jqEvt) => {
       return callback(...jqEvt.femData);
     }
@@ -31,11 +31,11 @@ Agent.Emitter= class JqEvent {
   }
   // 监听事件
   on(name, callback) {     
-    this.core.on(name, this._warpedCallback(callback));
+    this.core.on(name, this._wrapedCallback(callback));
   }
   // 一次性监听
   once(name, callback) {
-    this.core.one(name, this._warpedCallback(callback));
+    this.core.one(name, this._wrapedCallback(callback));
   }
   // 发射事件
   emit(name, ...femData) {

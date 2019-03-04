@@ -19,7 +19,7 @@ export default function(pageExportsContext) {
     // 模块自定义或默认的路由配置
     const _doc = exports.$Doc === undefined ? {} : exports.$Doc;
     const {path = `/${defaultName}`} = _doc || {};   
-    routes.push({path, component: exports.default, _doc});  
+    routes.push({path, _filePath: fileName, component: exports.default, _doc});  
   });
   
   return routes;

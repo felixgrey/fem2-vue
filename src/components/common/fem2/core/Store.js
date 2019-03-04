@@ -350,8 +350,8 @@ class Store {
       return;
     }
     this._event.off(name, callback);
-    if(callback[`_warpedCallback${this.uniKey}`]){
-      this._event.off(name, callback[`_warpedCallback${this.uniKey}`]);
+    if(callback[`_wrapedCallback${this.uniKey}`]){
+      this._event.off(name, callback[`_wrapedCallback${this.uniKey}`]);
     }
   }
   
@@ -397,7 +397,7 @@ class Store {
       callback(...values);
     }
 
-    callback[`_warpedCallback${this.uniKey}`] = warpedCallback;
+    callback[`_wrapedCallback${this.uniKey}`] = warpedCallback;
     warpedCallback();
     
     let offList = [];

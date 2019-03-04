@@ -16,7 +16,87 @@ transform.business = {
   colorsMap
 }
 
-Agent.defaultHeaderTitle = '一个默认的标题';
+// 系统配置、数据转换配置、业务配置
+
+
+Agent.systemConfig = {
+  logo: './aaa',
+  title: 'XXX系统',
+  theme: {
+    name: 'ls-light', // light|dark
+    fontFamily: '',
+    primaryColor: '#1890FF',
+  },
+  layout: {
+    header: {
+      show: true,
+      fixed: true,
+    },
+    breadcrumb: {
+      show: false,
+      fixed: false,
+    },
+    navigation: {
+      autoVariant: false,
+      autoMode: false,
+      show: true,
+      fixed: true,
+    },
+    footer: {
+      show: false,
+    },
+    responsive: true,
+    sizeType: {
+      'screen-xs': {
+        maxWidth: 575,
+      },
+      'screen-sm': {
+        minWidth: 576,
+        maxWidth: 767,
+      },
+      'screen-md': {
+        minWidth: 768,
+        maxWidth: 991,
+      },
+      'screen-lg': {
+        minWidth: 992,
+        maxWidth: 1199,
+      },
+      'screen-xl': {
+        minWidth: 1200,
+        maxWidth: 1599,
+      },
+      'screen-xxl': {
+        minWidth: 1600,
+      }
+    }
+  },
+  navigation: {
+    mode: 'sidemenu', // 'sidemenu|topmenu',  
+    menu: [
+      {
+        icon: './aaa',
+        name: '第一层',
+        path: null,
+        statePath: false,
+        redirect: null,
+        reload: false,
+        target: '_self',
+        component: null,
+        hidden: false,
+        hiddenChildren: false,
+        authority: [],
+        operationAble: 'crud',
+        children: []
+      }
+    ] 
+  }
+} 
+
+// authorityConfig [{path:'',authority:[], operationAble:'crud'}]
+
+
+
 
 // 百度地图API版本，默认3.0
 // transform.bmapVersion = '3.0'; 
