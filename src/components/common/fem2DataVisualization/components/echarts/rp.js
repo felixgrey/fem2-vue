@@ -1,5 +1,5 @@
 import {echartsColors, EchartsTransformer} from './Utils';
-import {transform, noValue} from '../../core';
+import {transform, noValue, mergeConfig} from '../../core';
 /*
   雷达 饼
  */
@@ -10,10 +10,19 @@ export class RpTransformer extends EchartsTransformer {
       defaultType: 'pie',
       name:'rp',
       geomTypes: '^radar$|^pie$',
-      mustHas: ['nameField', 'valueField']
+      mustHas: ['valueField']
     });
 
-    const {dataSource, nameField, valueField, indicatorField, type} = param;
+    let {dataSource, nameField, valueField, indicatorField, type} = param;
+    
+    mergeConfig(this, param, {
+      maxM: 1,
+      nameField: '1'
+    });
+    
+    if(type === 'pie' && noValue(nameField)){
+      throw new Error('pie must has nameField');
+    }
     
     if(type === 'radar' && noValue(indicatorField)){
       throw new Error('radar must has indicatorField');
@@ -24,11 +33,11 @@ export class RpTransformer extends EchartsTransformer {
       aggregate: {
         [valueField]: this._aggregate
       },
-      groupFields: [nameField],
+      groupFields: [this._nameField],
       valueFields: [valueField]
     };
-
-    if(type === 'radar' && indicatorField){
+    
+    if(type === 'radar'){
       this._maxValueMap = new Map();
       
       _config.aggregate.max = ({value, item, defaultValue}) => {
@@ -125,6 +134,16 @@ export class RpTransformer extends EchartsTransformer {
     
     const _list = Array.from(_map.values());
     const _$getItem = (seriesIndex, dataIndex) => _list[dataIndex];
+    
+    let getMax;
+    if (this._uniMax) {
+      const _max = Array.from(this._maxValueMap.values()).sort((a,b) => b - a)[0] || _defaultValue;
+      getMax = () => _max;
+    } else {
+      getMax = (name) => {
+        return this._maxValueMap.get(name)
+      }
+    }
 
     return {
       _$getItem,
@@ -133,7 +152,7 @@ export class RpTransformer extends EchartsTransformer {
       },
       radar: {
         indicator: indicatorNames.map(name => {     
-          return {name, max: this._maxValueMap.get(name)};
+          return {name, max: getMax(name) * this._maxM};
         })
       },
       series: {

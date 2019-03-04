@@ -7,7 +7,7 @@ export function deepMerge(to = null, from, leaves = [], _hasCloned = new Map()) 
     from = to;
     to = null;
   }
-  const isObj = typeof from === 'object';
+  const isObj = typeof from === 'object' && from !== null;
   if(isObj) {
     if(_hasCloned.has(from)){
       return _hasCloned.get(from);

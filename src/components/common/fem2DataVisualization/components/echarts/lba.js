@@ -47,7 +47,7 @@ export class LbaTransformer extends EchartsTransformer {
       })
     } : () => {
       return _seriesData.map(dataMap => {
-        const item = (dataMap[0] || new DataMap()).toObject();
+        const item = (dataMap || new DataMap()).toObject();
         list.push(item);
         return item[this._yAxisField];
       })
