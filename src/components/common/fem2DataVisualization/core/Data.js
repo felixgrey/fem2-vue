@@ -42,7 +42,13 @@ const _AGGREGATES = {
   'join': ({field, value, item, option, keyCounts, defaultText}) => {
     const itemValue = noValue(item[field]) ? defaultText : item[field];
     return keyCounts === 0 ? `${itemValue}` : `${value}${option.$split || ','}${itemValue}`;
-  }
+  },
+  // 原始数据数组
+  'origin': ({value, item}) => {
+    value = value || [];
+    value.push(item);
+    return value;
+  },
 };
 
 const AGGREGATES = {..._AGGREGATES};

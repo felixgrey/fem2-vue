@@ -4,7 +4,8 @@
 
 <script>
 /* eslint-disable */
-import {transform, fromStructInArray} from '@/components/vueFem2';
+import {transform, } from '@/components/vueFem2';
+import apiData from './_apidata.js';
 
 const {
   AGGREGATES,  // 自带的聚合函数
@@ -12,18 +13,21 @@ const {
   fromObjectInArray, // 对象数组：ObjectInArray格式转为二维数组：ArrayInArray（第一条是字段名数组）格式
   transportArrayInArray, // 二维数组：ArrayInArray（第一条是字段名数组）行列互换，（第一列是字段名）
   transportObjectInArray, // 对象数组转换为列数组对象（字段名:数组格式）
-  fromStruct // 结构化数据（树形结构）转为对象数组
+  fromStruct, // 结构化数据（树形结构）转为对象数组
+  fromStructInArray,
+  fromObject
   
 } = transform;
 
-// 自带的全部6个聚合函数
+// 自带的聚合函数
 const {
   sum, // 求和
   aver, // 平均值
   count, // 聚合条数
   join, // 字符串连接
   max, // 最大值
-  min // 最小值
+  min, // 最小值
+  origin // 原始数据
 } = AGGREGATES;
 
 // 测试数据
@@ -256,6 +260,16 @@ const list = fromStructInArray(structData, {
   
 console.log(list);
 
+const apiList = transform.process(apiData.paths)
+  .fromObject('path')
+  .fromStructInArray([
+    {from: 'path', to: 'path'},
+    {from: 'get.tags.0|post.tags.0', to: 'tag'},
+    {from: 'get.description|post.description', to: 'desc'}
+  ]).outPut();
+
+
+console.log(apiList);
 
 
 

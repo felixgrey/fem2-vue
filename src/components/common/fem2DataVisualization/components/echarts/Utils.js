@@ -1,7 +1,7 @@
 import echarts, {getInstanceByDom} from 'echarts';
 import 'echarts/extension/bmap/bmap';
 //import echarts from 'echarts/lib/echarts';
-import {transform, DataSetTransformer, noValue, mergeConfig, blank, deepMerge} from '../../core';
+import {transform, DataSetTransformer, noValue, mergeConfig, blank, deepMerge, AGGREGATES} from '../../core';
 
 const _optionExecutorData = {
   clear: function(flag, echart) {
@@ -133,11 +133,6 @@ export function echartsColors(current  = 'rgba(0,0,0,1)', item = null, args = []
   };  
 }
 
-export function originItem({value, item}) {
-  value = value || [];
-  value.push(item);
-  return value;
-}
 
 // 叶子节点直接赋值
 const _leaves = ['data', 'color', 'symbolSize', 'indicator'];
@@ -172,7 +167,7 @@ export class EchartsTransformer extends DataSetTransformer {
     );
 
     const originName = this._originAs;
-    config.aggregate[originName] = originItem;
+    config.aggregate[originName] = AGGREGATES.origin;
     config.valueFields.push(originName);
 
     return config;

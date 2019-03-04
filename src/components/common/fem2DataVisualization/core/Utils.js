@@ -1,4 +1,4 @@
-import {noValue} from './Data';
+import {noValue, transform} from './Data';
 
 export const blank = () => {};
 
@@ -71,7 +71,7 @@ export function traceObject(obj, trace) {
   return traceObject(value, trace);
 }
 
-export function fromStructInArray(list = [], option) {
+transform.fromStructInArray = function (list = [], option) {
   if(typeof option !== 'object'){
     return list;
   }
@@ -93,7 +93,14 @@ export function fromStructInArray(list = [], option) {
       const fields = option[name];
       fields.forEach(fieldMap => {
         const {from, to, default: _default, set} = fieldMap;
-        let value = traceObject(item, from);
+        const froms = from.split('|');
+        let value;
+        for (let _from of froms) {
+          value = traceObject(item, from);
+          if(value !== undefined){
+            break;
+          }
+        }
         value = set ? set(value, item) : value;
         value = value === undefined ? _default : value;
         _item[to] = value;
@@ -106,4 +113,45 @@ export function fromStructInArray(list = [], option) {
     return seriesMap.default;
   }
   return seriesMap;
+};
+
+transform.fromObject = function (obj, field) {
+  return Object.keys(obj).map(key => {
+    const item = obj[key];
+    item[field] = key;
+    return item;
+  })
+};
+
+function TransformProcess(source){
+  this.source = source;
 }
+const _tpProto = TransformProcess.prototype;
+
+[
+  'fromArrayInArray', 'fromObjectInArray', 'transportArrayInArray',
+  'transportObjectInArray', 'fromStruct', 'fromStructInArray', 'fromObject'
+].forEach(funName => {
+  _tpProto[funName] = function(...args) {
+    return new TransformProcess(transform[funName](this.source, ...args));
+  };
+});
+
+['filter', 'map', 'sort'].forEach(funName => {
+  _tpProto[funName] = function(...args) {
+    return new TransformProcess(([].concat(this.source))[funName](...args));
+  };
+});
+
+_tpProto.transform = function(...args){
+    return new TransformProcess(transform(this.source, ...args));
+};
+
+_tpProto.outPut = function() {
+  return this.source;
+};
+
+transform.process = function (source){
+  return new TransformProcess(source);
+};
+
