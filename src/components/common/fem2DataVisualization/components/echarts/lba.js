@@ -33,7 +33,7 @@ export class LbaTransformer extends EchartsTransformer {
   }
   
   output() {
-    const {fields, allColors} = this._beforeOutput();
+    const {fields, allColors} = this._beforeoutput();
     const stack = this._stack ? this._yAxisField : false;
     const seriesNames = fields[this._seriesField] || [null];
     const list = [];

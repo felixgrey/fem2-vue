@@ -59,7 +59,7 @@ export class BmapTransformer extends EchartsTransformer {
   }
   
   output() {
-    const {allColors} = this._beforeOutput();  
+    const {allColors} = this._beforeoutput();  
     const {list} = super.output();
     let geomType = this._type(null);
     const {_lngField, _latField, _valueField} = this;

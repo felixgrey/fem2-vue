@@ -266,7 +266,7 @@ console.log(list);
 //  {from: 'path', to: 'path'},
 //  {from: 'get.tags.0|post.tags.0', to: 'tag'},
 //  {from: 'get.description|post.description', to: 'desc'}
-//]).outPut();
+//]).output();
 //
 //
 //console.log(apiList);

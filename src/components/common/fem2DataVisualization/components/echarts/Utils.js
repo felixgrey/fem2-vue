@@ -233,7 +233,7 @@ export class EchartsTransformer extends DataSetTransformer {
     return deepMerge(optionPrototype, opt);
   }
   
-  _beforeOutput() {
+  _beforeoutput() {
     const allColors = this._colors;
     const fields = {};
     this._groupFieldValues.forEach((valueSet, index) => {

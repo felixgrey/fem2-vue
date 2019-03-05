@@ -126,10 +126,28 @@ transform.fromObject = function (obj, field) {
   })
 };
 
+const _originField = `_origin${Date.now()}`;
+
+transform.forkByField = function(srouce , groupField) {
+  const obj = {};
+  transform({
+    dataSource: srouce,
+    groupFields:[groupField],
+    aggregate:{
+      [_originField]: transform.AGGREGATES.origin
+    },
+    valueFields:[_originField]
+  }).list.forEach(item => {
+    obj[item[groupField]] = item[_originField];
+  });
+  return obj;
+}
+
 transform.toObject = function(arr, keyField, valueField) {
   const obj = {};
+  const getValue = valueField ? item => item[valueField] : item => item;
   arr.forEach(item => {
-    obj[item[keyField]] = item[valueField];
+    obj[item[keyField]] = getValue(item);
   });
   return obj;
 };
@@ -141,7 +159,7 @@ const _tpProto = TransformProcess.prototype;
 
 [
   'fromArrayInArray', 'fromObjectInArray', 'transportArrayInArray','toObject',
-  'transportObjectInArray', 'fromStruct', 'fromStructInArray', 'fromObject'
+  'transportObjectInArray', 'fromStruct', 'fromStructInArray', 'fromObject', 'forkByField'
 ].forEach(funName => {
   _tpProto[funName] = function(...args) {
     return new TransformProcess(transform[funName](this.source, ...args));
@@ -163,7 +181,7 @@ _tpProto.transform = function(param = {}){
     return new TransformProcess(transform(param));
 };
 
-_tpProto.outPut = function() {
+_tpProto.output = function() {
   return this.source;
 };
 

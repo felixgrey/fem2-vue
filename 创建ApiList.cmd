@@ -1,1 +1,1 @@
-powershell.exe -NoExit  -Command "cd D:\work\vue\fem2-vue\src | powershell.exe -NoExit  -Command node createApiList.js" 
+powershell.exe -NoExit  -Command "cd D:\work\vue\fem2-vue\ | ren .babelrc.bak .babelrc | node createApiList.js" 

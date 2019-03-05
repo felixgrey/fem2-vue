@@ -17,7 +17,7 @@ let apiList = transform.process(apiData.paths)
     {from: 'path', to: 'path'},
     {from: 'get.tags.0|post.tags.0', to: 'tag'},
     {from: 'get.description|post.description', to: 'desc'}
-  ]).outPut().map(item => {
+  ]).output().map(item => {
     const name = item.path.split('/').pop().replace(/(-\w)/g,(a) => {return a.replace('-','').toUpperCase()});
     return `  /* \n  ${name}: { // ${item.desc || '-'} \n    type: "${item.path.replace('/api/v1/', '')}",   \n  }, \n  */\n  "${item.path}", `;
   });

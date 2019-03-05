@@ -24,7 +24,7 @@ require('babel-register');
 var fs = require('fs');
 var http = require('http');
 var BufferHelper = require('bufferhelper');
-var fem2DataVisualizationCore = require ('./components/common/fem2DataVisualization/core');
+var fem2DataVisualizationCore = require ('./src/components/common/fem2DataVisualization/core');
 
 var transform = fem2DataVisualizationCore.transform;
 
@@ -64,7 +64,7 @@ http.get({
       })
       .operate(source => source.list)
       .toObject('tag', 'apiList')
-      .outPut();
+      .output();
       
     const apiJson = JSON.stringify(apiList, null, 2);
     var fileText = `/*  自动生成的文件,勿动  */\n\nexport default ${apiJson};\n`;
@@ -72,7 +72,7 @@ http.get({
     console.log(fileText);
     return;
     
-    fs.writeFile('./components/business/services/apiList.js',fileText, 'UTF-8', function(err) {
+    fs.writeFile('./src/components/business/services/apiList.js',fileText, 'UTF-8', function(err) {
       if(!err){
         console.log('创建apiList.js成功');
         return;
