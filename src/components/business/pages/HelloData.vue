@@ -260,16 +260,16 @@ const list = fromStructInArray(structData, {
   
 console.log(list);
 
-const apiList = transform.process(apiData.paths)
-  .fromObject('path')
-  .fromStructInArray([
-    {from: 'path', to: 'path'},
-    {from: 'get.tags.0|post.tags.0', to: 'tag'},
-    {from: 'get.description|post.description', to: 'desc'}
-  ]).outPut();
-
-
-console.log(apiList);
+//const apiList = transform.process(apiData.paths)
+//.fromObject('path')
+//.fromStructInArray([
+//  {from: 'path', to: 'path'},
+//  {from: 'get.tags.0|post.tags.0', to: 'tag'},
+//  {from: 'get.description|post.description', to: 'desc'}
+//]).outPut();
+//
+//
+//console.log(apiList);
 
 
 
