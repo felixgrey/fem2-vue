@@ -4,6 +4,8 @@ import {transform, noValue, mergeConfig} from '../../core';
   雷达 饼
  */
 
+const blankNameField = `_name${Math.random() * 10e16}`;
+
 export class RpTransformer extends EchartsTransformer {
   _init (param = {}) {
     this._beforeInit(param, {
@@ -17,7 +19,7 @@ export class RpTransformer extends EchartsTransformer {
     
     mergeConfig(this, param, {
       maxM: 1,
-      nameField: '1'
+      nameField: blankNameField
     });
     
     if(type === 'pie' && noValue(nameField)){

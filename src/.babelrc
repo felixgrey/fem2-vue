@@ -1,6 +1,10 @@
 {
-   "presets": [
-     "env",
-    "stage-0"
+  "presets": [
+    ["env", {
+      "useBuiltins": true,
+      "targets": {
+        "node": "current"
+      }
+    }], "stage-0"
   ]
- }
+}

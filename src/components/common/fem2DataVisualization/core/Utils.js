@@ -118,9 +118,20 @@ transform.fromStructInArray = function (list = [], option) {
 transform.fromObject = function (obj, field) {
   return Object.keys(obj).map(key => {
     const item = obj[key];
+    if(noValue(item) || typeof item === 'number') {
+      return item;
+    }
     item[field] = key;
     return item;
   })
+};
+
+transform.toObject = function(arr, keyField, valueField) {
+  const obj = {};
+  arr.forEach(item => {
+    obj[item[keyField]] = item[valueField];
+  });
+  return obj;
 };
 
 function TransformProcess(source){
@@ -129,7 +140,7 @@ function TransformProcess(source){
 const _tpProto = TransformProcess.prototype;
 
 [
-  'fromArrayInArray', 'fromObjectInArray', 'transportArrayInArray',
+  'fromArrayInArray', 'fromObjectInArray', 'transportArrayInArray','toObject',
   'transportObjectInArray', 'fromStruct', 'fromStructInArray', 'fromObject'
 ].forEach(funName => {
   _tpProto[funName] = function(...args) {
@@ -143,8 +154,13 @@ const _tpProto = TransformProcess.prototype;
   };
 });
 
-_tpProto.transform = function(...args){
-    return new TransformProcess(transform(this.source, ...args));
+_tpProto.operate = function(callback) {
+  return new TransformProcess(callback(this.source));
+};
+
+_tpProto.transform = function(param = {}){
+    param.dataSource = this.source;
+    return new TransformProcess(transform(param));
 };
 
 _tpProto.outPut = function() {
