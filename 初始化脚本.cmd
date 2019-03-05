@@ -15,5 +15,5 @@
 
 :: 3 运行我
 cd %~dp0
-echo powershell.exe -NoExit  -Command "cd %~dp0 | ren .babelrc .babelrc.bak | npm start" > 运行npmStart.cmd
-echo powershell.exe -NoExit  -Command "cd %~dp0 | ren .babelrc.bak .babelrc | node createApiList.js" > 创建ApiList.cmd
+echo powershell.exe -NoExit  -Command "cd %~dp0 | npm start" > 运行npmStart.cmd
+echo powershell.exe -NoExit  -Command "cd %~dp0 | node createApiList.js" > 创建ApiList.cmd
