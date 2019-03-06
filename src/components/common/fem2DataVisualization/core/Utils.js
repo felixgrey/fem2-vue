@@ -143,6 +143,10 @@ transform.forkByField = function(srouce , groupField) {
   return obj;
 }
 
+transform.toValueList = function (arr, valueField) {
+  return arr.map(item => item[valueField]);
+};
+
 transform.toObject = function(arr, keyField, valueField) {
   const obj = {};
   const getValue = valueField ? item => item[valueField] : item => item;
@@ -158,7 +162,7 @@ function TransformProcess(source){
 const _tpProto = TransformProcess.prototype;
 
 [
-  'fromArrayInArray', 'fromObjectInArray', 'transportArrayInArray','toObject',
+  'fromArrayInArray', 'fromObjectInArray', 'transportArrayInArray','toObject', 'toValueList',
   'transportObjectInArray', 'fromStruct', 'fromStructInArray', 'fromObject', 'forkByField'
 ].forEach(funName => {
   _tpProto[funName] = function(...args) {
