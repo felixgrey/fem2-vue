@@ -91,7 +91,14 @@ export class BmapTransformer extends EchartsTransformer {
             const {dataIndex} = args[0];
             const current = allColors[dataIndex % allColors.length];
             return echartsColors(current, list[dataIndex], args)(this._itemColors);
-          }  
+          },
+          normal:{
+            color: (...args)=> {
+              const {dataIndex} = args[0];
+              const current = allColors[dataIndex % allColors.length];
+              return echartsColors(current, list[dataIndex], args)(this._itemColors);
+            }
+          }
         },
         data: list.map(item => [item[_lngField], item[_latField], item[_valueField], item])
       }

@@ -74,7 +74,7 @@ export class RpTransformer extends EchartsTransformer {
     const _$getItem = (seriesIndex, dataIndex) => {
       return list[dataIndex];
     }
-    
+
     const _$getItemColor = (seriesIndex, dataIndex, args)=> {
       const current = allColors[dataIndex % allColors.length];
       return echartsColors(current, list[dataIndex], args)(this._itemColors);
@@ -94,7 +94,10 @@ export class RpTransformer extends EchartsTransformer {
       series: {
         type: 'pie',
         itemStyle: {
-          color: itemColor  
+          color: itemColor,
+          normal:{
+            color: itemColor
+          }
         },
         label: {
           color: itemColor

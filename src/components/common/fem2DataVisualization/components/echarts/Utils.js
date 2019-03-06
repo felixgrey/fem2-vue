@@ -86,6 +86,8 @@ export function echartsColors(current  = 'rgba(0,0,0,1)', item = null, args = []
       offsetfrom = 0,
       offsetTo = 1
     } = extend;
+    
+//  console.log(colorPattern.toString(), typeof colorPattern === 'function')
   
     if (typeof colorPattern === 'function') {
       return colorPattern(item, current, args);

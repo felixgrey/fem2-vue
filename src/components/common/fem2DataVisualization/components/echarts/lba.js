@@ -95,7 +95,10 @@ export class LbaTransformer extends EchartsTransformer {
       return {
         name,
         itemStyle:{
-          color: itemColor
+          color: itemColor,
+          normal:{
+            color: itemColor
+          }
         },
         lineStyle:{
           color: lineColor
