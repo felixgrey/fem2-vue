@@ -39,7 +39,6 @@ Store.Emitter= class JqEvent {
   }
 };
 
-
 export {Store, $Transform, blank};
 
 Store.inject = (config) => {
@@ -56,7 +55,7 @@ Store.inject = (config) => {
       this.$Store = new Store(config);
       this.$Controller = this.$Store.controller();
       this.$Model = this.$Store.model;  
-      this.$Controller.watch((model) => {this.feModel = model});
+      this.$Controller.watch((model) => {this.model = model});
     }
 
     // beforeDestroy
@@ -78,11 +77,11 @@ Store.inject = (config) => {
     const oldData = Component.data || blank;
     if(typeof oldData === 'function') {
       Component.data = function (){
-        const result = {...oldData.bind(this)(), feModel:{}};
+        const result = {...oldData.bind(this)(), model:{}};
         return result;
       }
     } else {
-      Component.data = {...oldData, feModel:{}};
+      Component.data = {...oldData, model:{}};
     }
     
     return Component;

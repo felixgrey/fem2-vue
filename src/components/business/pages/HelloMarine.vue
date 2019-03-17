@@ -1,5 +1,5 @@
 <template>
-    <div>{{myData}}【{{feModel.data3Status}}】【{{feModel.data3}}】【{{feModel.data3List}}】</div>
+    <div>{{myData}}【{{model.data3Status}}】【{{model.data3}}】【{{model.data3List}}】</div>
 </template>
 
 <script>
@@ -53,7 +53,7 @@ let storeConfig = {
 const store = new Store(storeConfig);
 
 store.model.data4 =1;
-//store.model.data5 = 2;
+store.model.data5 = 2;
 
 const controller = store.controller();
 
@@ -70,11 +70,11 @@ class Component extends blank{
   
   vue = {
     mounted(){
+      this.$Model.data4 = {f:"sssss"};
       
-      setTimeout(() => {
-        this.$Model.data4 = {f:"sssss"};
+      setTimeout(() => {  
         this.$Model.data5 = {g:'sddgggg'};
-      },1000)
+      }, 2000);
       
     },
     data(){

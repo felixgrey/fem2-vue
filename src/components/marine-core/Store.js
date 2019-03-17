@@ -162,15 +162,18 @@ class Controller {
     }
   }
   
-  watch = (callback) => {
+  watch = (callback, _once = false) => {
     if (this._invalid) {
       return;
     }
-    this._store.modelNames.forEach((modelName) => {
-      this.when(modelName, () => {
-        callback(Object.freeze({...this._store.model}));
-      });
-    });  
+    let fun = _once ? 'once' : 'on';
+    this[fun]('$dataChange', ()=>{
+      if (this._invalid) {
+        return;
+      }
+      callback(Object.freeze({...this._store.model}));
+    });
+    callback(Object.freeze({...this._store.model}));
   }
   
   when = (name, callback, _once = false)  => {
@@ -389,7 +392,7 @@ export default class Store {
     return true;
   }
 
-  defineModel(name, def = true) {
+  defineModel(name, value, def = true) {
     if (this._invalid) {
       return;
     }
@@ -407,7 +410,7 @@ export default class Store {
       return;
     }
     
-    this._data[name] = [];
+    this._data[name] = (value === undefined) ? []: [].concat(value);
     
     Object.defineProperty(this.model, name, {
       enumerable: true,
@@ -432,6 +435,7 @@ export default class Store {
           this._data[name][0] = newValue;
           if(this._status[name] !== 'set') {
             this._status[name] = 'set';
+            this._emitter.emit(`$statusChange`);
             this._emitter.emit(`$statusChange:${name}`);
           }
           this._emitter.emit(`$dataChange`);
@@ -463,6 +467,7 @@ export default class Store {
           this._data[name] = newValue;
           if(this._status[name] !== 'set') {
             this._status[name] = 'set';
+            this._emitter.emit(`$statusChange`);
             this._emitter.emit(`$statusChange:${name}`);
           }
           this._emitter.emit(`$dataChange`);
@@ -489,6 +494,7 @@ export default class Store {
         const oldStatus = this._status[name];
         if(oldStatus !== newStatus){
           this._status[name] = newStatus;
+          this._emitter.emit(`$statusChange`);
           this._emitter.emit(`$statusChange:${name}`);
         }
       }
