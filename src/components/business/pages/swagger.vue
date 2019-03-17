@@ -22,7 +22,7 @@ let apiList = transform.process(apiData.paths)
     return `  /* \n  ${name}: { // ${item.desc || '-'} \n    type: "${item.path.replace('/api/v1/', '')}",   \n  }, \n  */\n  "${item.path}", `;
   });
   
-  console.log('export default [\n ' + apiList.join('\n') + '\n];\n');
+//console.log('export default [\n ' + apiList.join('\n') + '\n];\n');
   
   export default {}
 </script>

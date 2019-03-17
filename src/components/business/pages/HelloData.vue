@@ -258,7 +258,7 @@ const list = fromStructInArray(structData, {
   ]
 });
   
-console.log(list);
+//console.log(list);
 
 //const apiList = transform.process(apiData.paths)
 //.fromObject('path')

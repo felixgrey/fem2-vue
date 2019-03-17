@@ -9,15 +9,18 @@ export function noValue(value) {
   return value === null || value === undefined;
 }
 
-export function blank(){};
+export function blank(){}
 
 let errorLog = blank;
 if (process.env.NODE_ENV === 'development' && console && typeof global.console.error === 'function') {
   errorLog = function(...args){global.console.error('【marine-WARING】:', ...args)};
 }
-export {errorLog};
 
-export stopRun = Math.random() * 10e6;
+const stopRun = Math.random() * 10e6;
+export {
+  errorLog,
+  stopRun}
+;
 
 export class Executor {
   constructor() {
@@ -104,7 +107,7 @@ export class Executor {
     return newResult;
   }
   
-  destroy(name, fun) {
+  destroy(name) {
     if (this._invalid || noValue(name)) {
       return;
     }
@@ -139,74 +142,74 @@ class Controller {
     this.executor = null;
   }
   
-  on (name, callback) {
+  on = (name, callback) => {
     if (this._invalid) {
       return;
     }
     this._emitter.on(name, callback);
-    
     return () => {
       this._emitter.off(name, callback);
     }
   }
   
-  once (name, callback) {
+  once = (name, callback) => {
     if (this._invalid) {
       return;
     }
+    this._emitter.once(name, callback);
     return () => {
       this._emitter.off(name, callback);
     }
   }
   
-  when (name, callback) {
+  watch = (callback) => {
     if (this._invalid) {
       return;
     }
-    
-    if (this.store.model[`${name}Status`] === 'set') {
-      callback({
-        model: this.store.model[name],
-        list: this.store.model[`${name}List`]
+    this._store.modelNames.forEach((modelName) => {
+      this.when(modelName, () => {
+        callback(Object.freeze({...this._store.model}));
       });
-    }
-    
-    return this.on(`$dataChange:${name}`, callback);  
+    });  
   }
   
-  load (name, callback) {
+  when = (name, callback, _once = false)  => {
     if (this._invalid) {
       return;
     }
+    let fun = _once ? 'once' : 'on';
     
-    if (this.store.model[`${name}Status`] === 'set') {
+    const wrapedCallback = () => {
+      if (this._invalid) {
+        return;
+      }
       callback({
-        [name]: this.store.model[name],
-        [`${name}List`]: this.store.model[`${name}List`]
+        model: this._store.model[name],
+        list: this._store.model[`${name}List`]
       });
     }
     
-    return this.once(`$dataChange:${name}`, callback);  
+    if (this._store.model[`${name}Status`] === 'set') {
+        wrapedCallback();
+        if (_once) {
+          return blank;
+        }
+    }
+
+    return this[fun](`$dataChange:${name}`, wrapedCallback);
+  }
+  
+  load = (name, callback)  => {
+    return this.when(name, callback, true);
   }
 
-  submit(...args) {
+  submit = (...args)  => {
     if (this._invalid) {
       return;
     }
-    return this.store._submit(...args);
+    return this._store._submit(...args);
   } 
 }
-
-controllerMethods.forEach(funName => {
-  Controller.prototype[funName] = function(name, ...args) {
-    if (this._invalid) {
-      return;
-    }
-    const off = this._store[funName](name, ...args);
-    this._offList.push(off);
-    return off;
-  }
-});
 
 export default class Store {
   constructor(config) {
@@ -224,6 +227,7 @@ export default class Store {
     });
     
     this.model = {};
+    this.modelNames = [];
     
     this._emitter = new _Emitter();
     this._config = config;
@@ -232,44 +236,70 @@ export default class Store {
     this._status = {};
    
     this._invalid = false;
-    this._controller = this.controller();
+    this.myController = this.controller();
     
-    this.init(config);
+    this._init(config);
   }
   
   _init(config) {
-    const {when} = this._controller;
+    const {when} = this.myController;
     
     for (let modelName in config) {
       if (/^\$|^_/g.test(modelName)) {
         continue;
       }      
       this.defineModel(modelName);
+      this.modelNames.push(modelName);
       
       let {
         type,
         default: _default,
+        reset,
+        snapshot,
         filter = [],
         dependence = []
       } = config[modelName];
       
+      if (!noValue(reset)) {
+        reset = [].concat(reset);
+        reset.forEach(name => {
+          when(name, () => {
+            this.model[`${modelName}List`] = !noValue(_default) ? [].concat(_default) : []
+          })
+        })      
+      }
+      
+      if (!noValue(snapshot)) {
+        snapshot = [].concat(snapshot);
+        snapshot.forEach(name => {
+          when(name, () => {
+            this.model[`${modelName}List`] =JSON.parse(JSON.stringify(this.model[`${name}List`]));
+          })
+        })      
+      }
+      
       if (!noValue(type)) {
         
         const submitCallback = () => {
+          const paramModel = {};
           const params = {};
           
-          for (let dName in dependence) {
-            if(this.model[dName] === undefined) {
-              this.model[`${modelName}List`] = [];
+          for (let fName of filter) {
+            paramModel[fName] = this.model[fName];
+            Object.assign(params, this.model[fName]);
+          }
+          
+          for (let dName of dependence) {
+            if(this.model[dName] === undefined ) {
+              if(!noValue(this.model[modelName])){
+                this.model[`${modelName}List`] = [];
+              }
               return;
             }
-            params[dName] = this.model[dName];
+            paramModel[dName] = this.model[dName];
+            Object.assign(params, this.model[dName]);
           }
-          
-          for (let fName in filter) {
-            params[fName] = this.model[fName];
-          }
-          
+
           clearTimeout(this._lagFetchIndex);
           this._lagFetchIndex = setTimeout(() => {
             if(this.model[`${modelName}Status`] === 'loading'){
@@ -278,15 +308,21 @@ export default class Store {
             }
             this.model[`${modelName}Status`] = 'loading';
             
-            this._fetch(type, {
-              type,
-              params,
-              model: this.model[modelName],
-              modelList: this.model[`${modelName}List`]
-            }).then((newModel) => {
+            Promise.resolve(this._fetch(type, {
+                type,
+                params,
+                paramModel,
+                model: this.model[modelName],
+                modelList: this.model[`${modelName}List`]
+              })
+            ).then((newModel) => {
+              if(newModel === undefined){
+                throw new Error(`${modelName} can not be undefined`);
+              }
               this.model[`${modelName}List`] = [].concat(newModel);
             }).catch((e) => {
               this.model[`${modelName}Status`] = 'set';
+              throw new Error(e);
             });
           }, 20);
         }
@@ -299,14 +335,14 @@ export default class Store {
         });
         submitCallback();
         
-      } else if (_default !== undefined){
-        this.model[`${name}List`] = [].concat(_default);
+      } else if (_default !== undefined) {
+        this.model[`${modelName}List`] = [].concat(_default);
       }
     }
   }
   
   _fetch(name, ...args) {
-    return Store.commonStore._controller.executor.run(name, ...args);
+    return Store.globalStore.myController.executor.run(name, ...args);
   }
   
   _submit(param) {
@@ -316,6 +352,7 @@ export default class Store {
     
     const {
       type,
+      params = {},
       lock = [],
       data = {}
     } = param;
@@ -325,31 +362,33 @@ export default class Store {
       const old = this.model[nameStatus];
       this.model[nameStatus] = 'lock';
       return {old, nameStatus };
-    })
+    });
     
-    return Promise.resolve(this._fetch(type, {
-      type,
-      model: data,
-      modelList: [].concat(model)
-    })).then(result => {
+    const oldCallback = () => {
       oldList.forEach(({old, nameStatus}) => {
         this.model[nameStatus] = old;
       });
+    }
+    
+    return Promise.resolve(this._fetch(type, {
+      type,
+      params,
+      _submit: true,
+      model: data,
+      modelList: [].concat(data)
+    })).then(result => {
+      oldCallback();
       return result;
+    }).catch(e => {
+      oldCallback();
+      throw new Error(e);
     });
   }
   
-  _checkChange(newValue, oldValue) {
+  _checkChange() {
     return true;
   }
-  
-  setModels(dataSet){
-    for(let modelName in dataSet){
-      this.defineModel(modelName);
-      this.model[`${modelName}List`] = dataSet[modelName];
-    }
-  }
-  
+
   defineModel(name, def = true) {
     if (this._invalid) {
       return;
@@ -371,15 +410,19 @@ export default class Store {
     this._data[name] = [];
     
     Object.defineProperty(this.model, name, {
+      enumerable: true,
       get: () => {
         if(this._invalid) {
-          return;
+          return undefined;
         }
         return this._data[name][0]
       },
       set: (newValue) => {
         if(this._invalid) {
-          return;
+          return undefined;
+        }
+        if(newValue === undefined) {
+          throw new Error(`${name} can not be undefined`);
         }
         const oldValue = this._data[name][0];
         if (typeof newValue === 'function') {
@@ -390,23 +433,25 @@ export default class Store {
           if(this._status[name] !== 'set') {
             this._status[name] = 'set';
             this._emitter.emit(`$statusChange:${name}`);
-          }          
+          }
+          this._emitter.emit(`$dataChange`);
           this._emitter.emit(`$dataChange:${name}`);
         }
       }
     });
     
     Object.defineProperty(this.model, `${name}List`, {
+      enumerable: true,
       get: () => {
         if(this._invalid) {
-          return;
+          return undefined;
         }
         return this._data[name];
       },
       set: (newValue) => {
         if(this._invalid) {
           return;
-        }
+        }     
         if(newValue === undefined) {
           throw new Error(`${name}List can not be undefined`);
         }
@@ -420,12 +465,14 @@ export default class Store {
             this._status[name] = 'set';
             this._emitter.emit(`$statusChange:${name}`);
           }
+          this._emitter.emit(`$dataChange`);
           this._emitter.emit(`$dataChange:${name}`);
         }
       }
     });
     
     Object.defineProperty(this.model, `${name}Status`, {
+      enumerable: true,
       get: () => {
         if(this._invalid) {
           return 'undefined';
@@ -460,6 +507,7 @@ export default class Store {
       return;
     }
     this._invalid = true;
+    clearTimeout(this._lagFetchIndex);
     this._emitter.emit('$storeDestroy');
     this._emitter.destroy();
     this._emitter = null;
@@ -471,7 +519,7 @@ export default class Store {
   } 
 }
 
-Store.inject = blank;
+Store.inject = () => blank;
 
 Object.defineProperty(Store, 'Emitter', {
   set: (Emitter) => {
@@ -488,12 +536,15 @@ Object.defineProperty(Store, 'Emitter', {
     
     _Emitter = Emitter;
     
-    Object.defineProperty(Store, 'commonStore', {
+    Object.defineProperty(Store, 'globalStore', {
       value: new Store({}),
       writable: false
     });
+    
+    Store.globalRunner = (...args) => Store.globalStore.myController.executor.runner(...args);  
   },
   get: () => {
     return _Emitter;
   }
 });
+
