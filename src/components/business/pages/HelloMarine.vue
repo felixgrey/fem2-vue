@@ -5,6 +5,7 @@
 <script>
  /* eslint-disable */
   import {Store, $Transform, blank} from '@/components/marine-vue';
+  import apiData from './_apidata.js';
 
 // 测试数据
 const data = [];
@@ -34,7 +35,16 @@ Store.globalRunner('a.b.c', function(params){
 
 let group = $Transform(data).toGrouped("sect,sex => money").getData();
 
-//console.log(group)
+let api = $Transform(apiData.paths)
+  .fromObject('path')
+  .fromStructList([
+    {from: 'path', to: 'path'},
+    {from: 'get.tags.0|post.tags.0', to: 'tag'},
+    {from: 'get.description|post.description', to: 'desc'}
+  ])
+  .getData();
+
+console.log(group)
 
 let storeConfig = {
     data1:{

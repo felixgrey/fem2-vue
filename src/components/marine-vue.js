@@ -42,8 +42,7 @@ Store.Emitter= class JqEvent {
 export {Store, $Transform, blank};
 
 Store.inject = (config) => {
-  return (Component) => {
-    
+  return (Component) => {   
     if(typeof Component === 'function'){
       Component = new Component().vue;
     }
@@ -52,9 +51,11 @@ Store.inject = (config) => {
     const oldCreated = Component.created;
     Component.created = function() {
       oldCreated && oldCreated.apply(this);
+      
       this.$Store = new Store(config);
       this.$Controller = this.$Store.controller();
-      this.$Model = this.$Store.model;  
+      this.$Model = this.$Store.model; 
+      
       this.$Controller.watch((model) => {this.model = model});
     }
 
@@ -62,16 +63,12 @@ Store.inject = (config) => {
     const beforeDestroy = Component.beforeDestroy;
     Component.beforeDestroy = function() {
       beforeDestroy && beforeDestroy.apply(this);
+      
       this.$Store.destroy();
       this.$Store = null;
       this.$Controller = null;
       this.$Model = null;
     }
-    
-    // props
-    const props = Component.props = Component.props || {};
-    props.config = {type: Object};
-    props.store = {type: Object};
 
     // data
     const oldData = Component.data || blank;

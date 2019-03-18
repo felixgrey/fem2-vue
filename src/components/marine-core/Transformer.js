@@ -269,18 +269,84 @@ class TransformProcess {
     this.data;
   }
   
-//fromStruct(config) {
-//  config.forEach(fieldMap => {
-//    const {from, to, default: _default, set} = fieldMap;
-//    const froms = from.split('|');
-//    let value;
-//    
-//  })
-//}
+  fromObject(field = '_key') {  
+    let obj = this.source;
+    this.data = Object.keys(obj).map(key => {
+      const item = obj[key];
+      if(noValue(item) || typeof item === 'number') {
+        return item;
+      }
+      item[field] = key;
+      return item;
+    });
+    this.data.$refs = this.data.$refs || {};
+    return new TransformProcess(this.data);
+  }
+  
+  fromStructList(option) {
+    const list = [].concat(this.source);
+    if(typeof option !== 'object'){
+      return list;
+    }
+    const optionIsArray = Array.isArray(option);
+    if (optionIsArray) {
+      option = {default: option};
+    }
+    
+    const seriesMap = {};
+    
+    Object.keys(option).forEach(name => {
+      seriesMap[name] = [];
+    });
+    
+    list.forEach(item => {
+      Object.keys(option).forEach(name => {
+        const _item ={};
+        const fields = option[name];
+        fields.forEach(fieldMap => {
+          const {
+            from,
+            to,
+            default: _default,
+            set
+          } = fieldMap;
+          
+          const froms = from.split('|');
+          let value;
+          for (let _from of froms) {
+            value = traceObject(item, _from);
+            if(value !== undefined){
+              break;
+            }
+          }
+          value = set ? set(value, item) : value;
+          value = value === undefined ? _default : value;
+          _item[to] = value;
+        }); 
+        seriesMap[name].push(_item);
+      });
+    });
+    
+  if(optionIsArray){
+    this.data = seriesMap.default;
+  }else {
+    this.data = seriesMap;
+  }
+  this.data.$refs = this.data.$refs || {};
+  return new TransformProcess(this.data);
+}
   
   toGrouped(config = {}){   
     config = strToConfig(config);
+
+    if(noValue(config.originField)) {
+      config.originField = '_origin';
+    }
+    config.aggregate[config.originField] = 'origin';
+    config.valueFields = [].concat(config.valueFields || []);
+    config.valueFields.push(config.originField);  
     config.dataSource = this.source;
+    
     const tf = new DataSetTransformer(config);
     this.data = tf.getData();
     this.data.$refs = this.data.$refs || {};
