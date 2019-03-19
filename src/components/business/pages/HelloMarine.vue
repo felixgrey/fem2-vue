@@ -1,10 +1,16 @@
 <template>
+  <div>
     <div>{{myData}}【{{model.data3Status}}】【{{model.data3}}】【{{model.data3List}}】</div>
+    <div id='test01' style="margin-top:30px;height:1000px;background: red;">002</div>
+    <div id='test02'  style="margin-top:30px;height:1000px;background: green;">003</div>
+  </div>  
 </template>
 
 <script>
  /* eslint-disable */
   import {Store, $Transform, blank} from '@/components/marine-vue';
+  import position from 'position';
+  import getElementRelativeOffset from 'get-element-relative-offset';
   import apiData from './_apidata.js';
 
 // 测试数据
@@ -27,13 +33,80 @@ for (let i = 8; i < 12; i++) {
     age: 20+2*i,   
   });
 }
+for (let i = 12; i < 15; i++) {
+  data.push({
+    id: i+1,
+    sect: '男科医院',
+    sex: '男',
+    money: i*200,
+    age: 20+2*i,   
+  });
+}
+
+for (let i = 15; i < 18; i++) {
+  data.push({
+    id: i+1,
+    sect: '妇科医院',
+    sex: '女',
+    money: i*200,
+    age: 20+2*i,   
+  });
+}
+
+for (let i = 18; i < 20; i++) {
+  data.push({
+    id: i+1,
+    sect: '宠物医院',
+    sex: null,
+    money: i*200,
+    age: 20+2*i,   
+  });
+}
 
 Store.globalRunner('a.b.c', function(params){
   console.log(params)
   return ['aaa','bbbb','ccccc'];
 })
 
-let group = $Transform(data).toGrouped("sect,sex => money").getData();
+//console.log($Transform(data)
+//.toGrouped("sect,sex => money")
+//.output());
+//
+//console.log($Transform(data)
+//.toSeries("sect,sex => money")
+//.output());
+
+//console.log($Transform(data)
+//.toNumSeries({
+//  group: "sect => money",
+//  defaultSeriesName: '医院',
+//  xData: ['张三医院','李四医院','XX医院', '王五医院', '男科医院', '妇科医院', '宠物医院', '精神病院']
+//})
+//.output());
+//
+//console.log($Transform(data)
+//.toPieSeries({
+//  group: "sect,sex => money:aver",
+//})
+//.output());
+//
+//console.log($Transform(data)
+//.toHeatSeries({
+//  group: "sect,sex => money:aver",
+//})
+//.output());
+
+//console.log($Transform(data)
+//.toRadarSeries({
+//  group: "sect,sex => money",
+//})
+//.output());
+
+console.log($Transform(data)
+.toScatterSeries("sect, sex => money, age: aver")
+.output());
+
+
 
 let api = $Transform(apiData.paths)
   .fromObject('path')
@@ -42,9 +115,10 @@ let api = $Transform(apiData.paths)
     {from: 'get.tags.0|post.tags.0', to: 'tag'},
     {from: 'get.description|post.description', to: 'desc'}
   ])
-  .getData();
+  .output();
 
-console.log(group)
+
+//console.log(api)
 
 let storeConfig = {
     data1:{
@@ -75,17 +149,32 @@ controller.when('data3',()=>{
 store.model.data5 = 2;
 
 
+function toDomPosition(dom, root = document.getElementById('app')){
+  const {top} =  getElementRelativeOffset(dom,(dom)=>{
+    return dom === document.getElementById('app')
+  });
+  window.scrollTo(0, top);
+}
+
 export default @Store.inject(storeConfig)
 class Component extends blank{
   
   vue = {
     mounted(){
       this.$Model.data4 = {f:"sssss"};
+      this.$Model.data5 = {g:'sddgggg'};
       
       setTimeout(() => {  
-        this.$Model.data5 = {g:'sddgggg'};
+//      this.$Model.data5 = {g:'sddgggg'};
       }, 2000);
       
+      toDomPosition(document.getElementById('test02'))
+
+      
+      
+    },
+    updated(){
+      toDomPosition(document.getElementById('test02'))
     },
     data(){
       return {

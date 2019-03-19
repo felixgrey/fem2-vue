@@ -5,6 +5,8 @@ export function noValue(value) {
   return (value === null || value === undefined);
 }
 
+ const _seriesName = Math.random()*10e6;
+
 /*
  预定义的聚合函数
  */
@@ -116,6 +118,9 @@ export class DataMap extends Map {
   }
 }
 
+/*
+ 将object转为DataMap
+ */
 function traceObj(obj = {}, _dataMap = new DataMap()) {
   for (let key in obj) {
     const value = obj[key];
@@ -207,28 +212,44 @@ export class DataSetTransformer {
       currentData.set(valueField, currentValue); 
     });    
   } 
-
-
-  getData() {  
+  
+  /*
+     分组后各组值得枚举
+   */
+  getEnums(){
     const fields = {};
     this._groupFieldValues.forEach((valueSet, index) => {
       fields[this._groupFields[index]] = Array.from(valueSet) ;
     }); 
+    return fields;
+  }
 
-    const result = this._data.toObjectInArray();
-    result.$refs = result.$refs || {};
-    result.$refs.enums = fields;
-    return result;
+  getData() {  
+    return this._data.toObjectInArray();
   }
 }
 
-function strToConfig(config) {
-  if(typeof config === 'object'){
-    return config;
+/*
+  解析分组配置字符串
+ */
+function groupStrToConfig(config) {
+  let _config;
+  if (typeof config === 'object') {
+    if(noValue(config.group)) {
+      return config;
+    }
+    
+    _config = {
+      aggregate: {},
+      ...config
+    };
+    
+    config = config.group;
+  } else {
+    _config = {
+      aggregate: {},
+    };
   }
-  const _config = {
-    aggregate: {}
-  };
   
   const [groupFieldStr = '', valueFieldStr = ''] = config.replace(/^\s+|\s+$/g,'').split('=>');
   const groupFields = groupFieldStr.replace(/^\s+|\s+$/g, '').split(',').map(field => field.replace(/^\s+|\s+$/g,''));
@@ -247,6 +268,9 @@ function strToConfig(config) {
   return _config;
 }
 
+/*
+ 根据字符串遍历objec
+ */
 export function traceObject(obj, trace) {
   if (typeof trace === 'string') {
     trace = trace.split('.');
@@ -263,12 +287,35 @@ export function traceObject(obj, trace) {
   return traceObject(value, trace);
 }
 
-class TransformProcess {
-  constructor(source) {
+const myMethods = [];
+
+/*
+  添加反射信息，并返回新TransformProcess
+ */
+export function refReturn(proto, name, descriptor) {
+  myMethods.push(name);
+  const oldFun = proto[name];
+  descriptor.value = function(...args) {   
+    oldFun.apply(this, args);
+//  if (this.useRef) {
+//    this.refs[`${name}Data`] = this.data;
+//  }
+    return new TransformProcess(this.data, this.refs, this.useRef);
+  }  
+}
+
+/*
+  链式调用转换过程
+ */
+export class TransformProcess {
+  constructor(source, initRefs = {}, useRef = true) {
     this.source = source;
     this.data;
+    this.useRef = useRef;
+    this.refs = useRef ? initRefs : {};
   }
   
+  @refReturn
   fromObject(field = '_key') {  
     let obj = this.source;
     this.data = Object.keys(obj).map(key => {
@@ -279,10 +326,9 @@ class TransformProcess {
       item[field] = key;
       return item;
     });
-    this.data.$refs = this.data.$refs || {};
-    return new TransformProcess(this.data);
   }
   
+  @refReturn
   fromStructList(option) {
     const list = [].concat(this.source);
     if(typeof option !== 'object'){
@@ -327,113 +373,209 @@ class TransformProcess {
       });
     });
     
-  if(optionIsArray){
-    this.data = seriesMap.default;
-  }else {
-    this.data = seriesMap;
-  }
-  this.data.$refs = this.data.$refs || {};
-  return new TransformProcess(this.data);
-}
-  
-  toGrouped(config = {}){   
-    config = strToConfig(config);
-
-    if(noValue(config.originField)) {
-      config.originField = '_origin';
+    if(optionIsArray){
+      this.data = seriesMap.default;
+    }else {
+      this.data = seriesMap;
     }
-    config.aggregate[config.originField] = 'origin';
-    config.valueFields = [].concat(config.valueFields || []);
-    config.valueFields.push(config.originField);  
+  }
+
+  @refReturn
+  toGrouped(config = {}){
+    config = groupStrToConfig(config);
+    
+    if(config.originField !== false){
+      if(noValue(config.originField)) {
+        config.originField = '_origin';
+      }
+      
+      config.aggregate[config.originField] = 'origin';
+      config.valueFields = [].concat(config.valueFields || []);
+      config.valueFields.push(config.originField); 
+    }
+
     config.dataSource = this.source;
     
     const tf = new DataSetTransformer(config);
     this.data = tf.getData();
-    this.data.$refs = this.data.$refs || {};
-    this.data.$refs.dataMap = tf._data;
-    return new TransformProcess(this.data);
+    if(this.useRef){
+//    this.refs.toGroupedDataMap = tf._data;
+      this.refs.toGroupedEnums = tf.getEnums();
+    }
   }
   
+  @refReturn
   toSeries(config = {}){
-    config = strToConfig(config);
+    config = groupStrToConfig(config);
     this.toGrouped(config);
-    const seriesField = config.groupFields[1] || null;
-    const $refs = this.data.$refs;
+    const seriesField = config.groupFields[1] || _seriesName;
     const series = new Map();
     this.data.forEach(item => {
-      if(!series.get(seriesField)){
+      if(!series.get(item[seriesField])){
          series.set(item[seriesField], []);
       }
-      series.get(seriesField).push(item);
+      series.get(item[seriesField]).push(item);
     });
-    this.data = Array.from(series.keys()).map(name => ({name, data: series.get(name)}));
-    $refs.seriesData = this.data;
-    this.data.$refs = $refs;
-
-    return new TransformProcess(this.data);
+    this.data = Array.from(series.keys()).map((name) => ({name, data: series.get(name)}));
   }
-
-  toNumSeries(config = {}) {
-    config = strToConfig(config);
-    this.toSeries(config);
-    const $refs = this.data.$refs;
-    const xField = $refs.enums[config.groupFields[0]] || [];  
-    const tempMap = {};
-    this.data.forEach(item => {
-      tempMap[item[config.groupFields[0]]] = item;
-    });
-
-    this.data = xField.map(xValue=> {
-      if(!noValue(tempMap[xValue])) {
-        return tempMap[xValue][config.valueFields[0]];
-      }
-      return null;
-    });
+  
+  _toXSeries(config = {}, typeName = 'Echarts', getvalue = a => a){
+    config = groupStrToConfig(config);
+    if(!this.useRef && !config.xData) {
+      throw new Error(`to${typeName}Series need refs or xData.`);
+    }
+    const defaultSeriesName = noValue(config.defaultSeriesName) ? null : config.defaultSeriesName;
     
-    this.data.$refs = $refs;  
-    return new TransformProcess(this.data);
+    this.toSeries(config);  
+    const xData = config.xData ? config.xData : this.useRef ? this.refs.toGroupedEnums[config.groupFields[0]] : [];  
+    let setSeriesMap = () => {};
+    if(this.useRef) {
+      this.refs[`xDataOf${typeName}`] = xData;
+      this.refs[`itemMapOf${typeName}`] = {};
+      setSeriesMap = (serIndex, dataIndex, item) => {
+        this.refs[`itemMapOf${typeName}`][serIndex] = this.refs[`itemMapOf${typeName}`][serIndex] || {};
+        this.refs[`itemMapOf${typeName}`][serIndex][dataIndex] = item;
+      }
+    }
+
+    this.data = this.data.map((series, serIndex) => {
+      const tempMap = {};
+      series.data.forEach(seriesItem => {
+        tempMap[seriesItem[config.groupFields[0]]] = seriesItem;
+      });
+      
+      return {
+        name: series.name === undefined ? defaultSeriesName : series.name,
+        data: xData.map((xValue, dataIndex) => {
+          const item = tempMap[xValue];
+          if(!noValue(item)) {
+            setSeriesMap(serIndex, dataIndex, item);
+            return getvalue(item);
+          }
+          return null;
+        })
+      };
+    });
+  }
+
+  @refReturn
+  toNumSeries(config = {}) {
+    config = groupStrToConfig(config);
+    this._toXSeries(config, 'NumSeries',
+      item => item[config.valueFields[0]]);
   }
   
-  toPieSeries(config = {}) {
-    config = strToConfig(config);
-    this.toSeries(config);
-    const $refs = this.data.$refs;
-    $refs.seriesData = this.data;
-    this.data = this.data.map(item => ({
-      key: item[config.groupFields[0]],
-      value: item[config.valueFields[0]]}));
-    this.data.$refs = $refs;
-    return new TransformProcess(this.data);
+  @refReturn
+  toPieSeries(config = {}) { 
+    config = groupStrToConfig(config);
+    this._toXSeries(config, 'PieSeries',
+      item => ({name: item[config.groupFields[0]], value: item[config.valueFields[0]]}));
+    this.data.forEach(series => {
+      series.data = series.data.filter(item => item !== null);
+    });
   }
   
+  @refReturn
   toHeatSeries(config = {}) {
-    config = strToConfig(config);
-    this.toSeries(config);
-    const $refs = this.data.$refs;
-    this.data = this.data.map(item => ([
+    config = groupStrToConfig(config);
+    if(!config.groupFields[1]){
+      throw new Error('toHeatSeries must has 2 groupFields');
+    }
+    this._toXSeries(config, 'HeatSeries',
+      item => ([
       item[config.groupFields[0]],
       item[config.groupFields[1]],
       item[config.valueFields[0]]]));
-    this.data.$refs = $refs;
-    return new TransformProcess(this.data);
   }
   
+  @refReturn
+  toScatterSeries(config = {}) {
+    config = groupStrToConfig(config);
+    if(!config.groupFields[1]){
+      throw new Error('toScatterSeries must has 2 groupFields');
+    } 
+    this._toXSeries(config, 'ScatterSeries',
+      item => {
+        const result = [
+          item[config.groupFields[0]],
+          item[config.groupFields[1]]
+        ];      
+        config.valueFields.forEach(valueFieldName => {
+          result.push(item[valueFieldName]);
+        });        
+        return result;
+      }
+    );
+    
+  }
+  
+  @refReturn
   toRadarSeries(config = {}) {
-    config = strToConfig(config);
-    this.toGrouped(config);
-    const $refs = this.data.$refs;
-    $refs.indicator
+    config = groupStrToConfig(config);
+    const maxValueMap = {}  
+    this._toXSeries(config, 'RadarSeries',
+      item => {
+        const xValue = item[config.groupFields[0]];
+        const value = item[config.valueFields[0]];
+        const max = maxValueMap[xValue] = maxValueMap[xValue] || -Infinity;
+        maxValueMap[xValue] = value > max ? value : max;
+        return value;
+      });
     
+    const seriesData = this.data;
+    this.data = [{
+      name: null,
+      data: []
+    }];
     
-    return new TransformProcess(this.data);
+    seriesData.forEach(series => {
+      this.data[0].data.push({
+        name: series.name,
+        value: series.data
+      })
+    });
+    
+    if(this.useRef) {
+      this.refs.indicatorOfRadarSeries = this.refs.xDataOfRadarSeries.map(name => {
+        return {
+          name,
+          max: maxValueMap[name] || null
+        }
+      });
+    }
+  }
+  
+  @refReturn
+  toTree(config = {}) {
+    
+  }
+  
+  @refReturn
+  fromTree(config = {}) {
+    
   }
   
   getData() {
     return noValue(this.data) ? this.source : this.data;
   }
   
+  getRefs() {
+    return this.refs;
+  }
+  
+  output() {
+    return {
+      data: this.getData(),
+      refs: this.getRefs()
+    }
+  } 
 }
 
-export default function $Transform(source){
-  return new TransformProcess(source);
+TransformProcess.fn = TransformProcess.prototype;
+TransformProcess.myMethods = myMethods;
+
+export default function $Transform(source, useRef = true) {
+  return new TransformProcess(source, {
+//  $TransformOrigin: source
+  }, useRef);
 }
