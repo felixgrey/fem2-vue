@@ -1,8 +1,8 @@
-import Store,{blank} from './Store';
+import Models,{blank} from './Models';
 import $Transform from './Transformer';
 
 export {
-  Store,
+  Models,
   $Transform,
   blank
 };

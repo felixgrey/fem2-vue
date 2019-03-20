@@ -1,4 +1,4 @@
-import {Store, $Transform, blank} from '@/components/marine-core';
+import {Models, $Transform, blank} from '@/components/marine-core';
 import $ from 'jquery';
 
 
@@ -6,7 +6,7 @@ import $ from 'jquery';
 const _callback =`_wrapedEmitterCallback${Date.now()}`;
 
 // jquery实现事件发射器
-Store.Emitter= class JqEvent {
+Models.Emitter= class JqEvent {
   constructor(){
     this.core = $({});
   }
@@ -39,9 +39,9 @@ Store.Emitter= class JqEvent {
   }
 };
 
-export {Store, $Transform, blank};
+export {Models, $Transform, blank};
 
-Store.inject = (config) => {
+Models.inject = (config) => {
   return (Component) => {   
     if(typeof Component === 'function'){
       Component = new Component().vue;
@@ -52,9 +52,9 @@ Store.inject = (config) => {
     Component.created = function() {
       oldCreated && oldCreated.apply(this);
       
-      this.$Store = new Store(config);
-      this.$Controller = this.$Store.controller();
-      this.$Model = this.$Store.model; 
+      this.$Models = new Models(config);
+      this.$Controller = this.$Models.controller();
+      this.$Model = this.$Models.model; 
       
       this.$Controller.watch((model) => {this.model = model});
     }
@@ -64,8 +64,8 @@ Store.inject = (config) => {
     Component.beforeDestroy = function() {
       beforeDestroy && beforeDestroy.apply(this);
       
-      this.$Store.destroy();
-      this.$Store = null;
+      this.$Models.destroy();
+      this.$Models = null;
       this.$Controller = null;
       this.$Model = null;
     }

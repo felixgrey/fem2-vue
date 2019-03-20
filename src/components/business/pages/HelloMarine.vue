@@ -8,7 +8,7 @@
 
 <script>
  /* eslint-disable */
-  import {Store, $Transform, blank} from '@/components/marine-vue';
+  import {Models, $Transform, blank} from '@/components/marine-vue';
   import position from 'position';
   import getElementRelativeOffset from 'get-element-relative-offset';
   import apiData from './_apidata.js';
@@ -63,7 +63,7 @@ for (let i = 18; i < 20; i++) {
   });
 }
 
-Store.globalRunner('a.b.c', function(params){
+Models.globalRunner('a.b.c', function(params){
   console.log(params)
   return ['aaa','bbbb','ccccc'];
 })
@@ -102,9 +102,39 @@ Store.globalRunner('a.b.c', function(params){
 //})
 //.output());
 
-console.log($Transform(data)
-.toScatterSeries("sect, sex => money, age: aver")
-.output());
+//console.log($Transform(data)
+//.toScatterSeries("sect, sex => money, age: aver")
+//.output());
+
+let tree = [];
+
+for(let i = 1;i < 5; i++) {
+  const item = {
+    id:i,
+    children: []
+  }
+  tree.push(item);
+  for(let j = 1; j< 5; j++){
+    const item2 = {
+      id: 10*i+j,
+      children: []
+    }
+    item.children.push(item2);
+    for(let k = 1; k< 5; k++){
+      const item3 = {
+        id: 100*i + 10*j + k,
+        children: []
+      }
+      item2.children.push(item3);
+    }
+  } 
+}
+
+console.log(tree)
+const tree2 = $Transform(JSON.parse(JSON.stringify(tree))).fromTree({rootParentKeyValue: 0}).getData();
+console.log(tree2)
+console.log($Transform(JSON.parse(JSON.stringify(tree2))).toTree({rootParentKeyValue: 0}).getData());
+
 
 
 
@@ -120,7 +150,7 @@ let api = $Transform(apiData.paths)
 
 //console.log(api)
 
-let storeConfig = {
+let modelsConfig = {
     data1:{
       default:[{a: 'aaa'},{b:'ssss'}]
     },
@@ -134,19 +164,19 @@ let storeConfig = {
     }
 };
 
-const store = new Store(storeConfig);
+const models = new Models(modelsConfig);
 
-store.model.data4 =1;
-store.model.data5 = 2;
+models.model.data4 =1;
+models.model.data5 = 2;
 
-const controller = store.controller();
+const controller = models.controller();
 
 controller.when('data3',()=>{
-  console.log(store.model.data3List)
+  console.log(models.model.data3List)
 })
 //
-//store.model.data4 =1;
-store.model.data5 = 2;
+//models.model.data4 =1;
+models.model.data5 = 2;
 
 
 function toDomPosition(dom, root = document.getElementById('app')){
@@ -156,7 +186,7 @@ function toDomPosition(dom, root = document.getElementById('app')){
   window.scrollTo(0, top);
 }
 
-export default @Store.inject(storeConfig)
+export default @Models.inject(modelsConfig)
 class Component extends blank{
   
   vue = {

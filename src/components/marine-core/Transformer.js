@@ -5,7 +5,7 @@ export function noValue(value) {
   return (value === null || value === undefined);
 }
 
- const _seriesName = Math.random()*10e6;
+const _seriesName = Math.random() * 10e6;
 
 /*
  预定义的聚合函数
@@ -132,9 +132,68 @@ function traceObj(obj = {}, _dataMap = new DataMap()) {
   }
   return _dataMap;
 }
-
 DataMap.fromObject = function(obj = {}) {
   return traceObj(obj);
+};
+
+/* 树到自连接关系 */
+function treeToRelation(source, config = {}, _extend = {}) {
+  const {
+    keyField = 'id',
+    parentKeyField = 'pid',
+    childrenField = 'children',
+    rootParentKeyValue = null,
+    leafField = '_leaf',
+    rootField = '_root'
+  } = config;
+  
+  let {
+    _pKey = null,
+    _list = [],
+    _refs = {
+      leaves: [],
+      roots: []
+    },
+    _markerLeaf,
+    _markerRoot
+  } = _extend;
+
+  if (!_markerLeaf) {
+    if(leafField !== false){
+      _markerLeaf= (item, flag = false) => {
+        item[leafField] = flag;
+        flag && _refs.leaves.push(item);
+      }
+    } else {
+      _markerLeaf = () => {};
+    }
+  }
+
+  if (!_markerRoot) {
+    if(rootField !== false){
+      _markerRoot= (item, flag = false) => {
+        item[rootField] = flag;
+        flag && _refs.roots.push(item);
+      }
+    } else {
+      _markerRoot = () => {};
+    }
+  }
+
+  source.forEach(item => {
+    const chlidren = item[childrenField] || [];
+    item[parentKeyField] = _pKey === null ? rootParentKeyValue : _pKey;
+    _markerLeaf(item, !chlidren.length);
+    _markerRoot(item, noValue(_pKey));
+    delete item[childrenField];
+    _list.push(item);   
+    return treeToRelation(chlidren, config, {_pKey: item[keyField], _list, _refs, _markerLeaf, _markerRoot});
+  });
+  
+  return {
+    data: _list,
+    refs: _refs
+  };
 }
 
 /*
@@ -379,6 +438,54 @@ export class TransformProcess {
       this.data = seriesMap;
     }
   }
+  
+  @refReturn
+  fromTree(config = {}) {
+    const {data, refs} = treeToRelation(this.source, config);
+    this.data = data;
+    if(this.useRef) {
+      this.refs.fromTreeEnums = refs;
+    }
+  }
+    
+  @refReturn
+  toTree(config = {}) {
+    const {
+      keyField = 'id',
+      parentKeyField = 'pid',
+      rootParentKeyValue = null,
+      blankArray = false,
+      childrenField = 'children',
+    } = config;
+    
+    const rootList = [];
+    const tempMap = {};
+    
+    let getBlankArray = () => null;
+    if(blankArray){
+      getBlankArray = () => [];
+    }
+    
+    this.source.forEach(item => {
+      const pkv = item[parentKeyField];
+      if (noValue(pkv) || pkv === rootParentKeyValue) {
+        rootList.push(item);
+      } else {
+        tempMap[item[parentKeyField]] = tempMap[item[parentKeyField]] || [];
+        tempMap[item[parentKeyField]].push(item);
+      }
+    });
+    
+    this.source.forEach(item => {
+      item[childrenField] = tempMap[item[keyField]] || getBlankArray();
+    });
+    
+    if(this.useRef) {
+      this.refs.toTreeChildrenMap = tempMap;
+    } 
+    
+    this.data = rootList;
+  }
 
   @refReturn
   toGrouped(config = {}){
@@ -543,16 +650,6 @@ export class TransformProcess {
         }
       });
     }
-  }
-  
-  @refReturn
-  toTree(config = {}) {
-    
-  }
-  
-  @refReturn
-  fromTree(config = {}) {
-    
   }
   
   getData() {

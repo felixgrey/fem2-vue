@@ -3,7 +3,7 @@ let _Emitter = null;
 const emitterMethods = ['on', 'once', 'emit', 'off', 'destroy'];
 const statusList = ['undefined', 'loading', 'locked', 'set']; 
 
-let storeKey = 1;
+let modelsKey = 1;
 
 export function noValue(value) {
   return value === null || value === undefined;
@@ -12,15 +12,16 @@ export function noValue(value) {
 export function blank(){}
 
 let errorLog = blank;
-if (process.env.NODE_ENV === 'development' && console && typeof global.console.error === 'function') {
-  errorLog = function(...args){global.console.error('【marine-WARING】:', ...args)};
+let console = (global || {}).console;
+if (process && process.env && process.env.NODE_ENV === 'development' && console && typeof console.error === 'function') {
+  errorLog = function(...args){console.error('【marine-WARING】:', ...args)};
 }
 
 const stopRun = Math.random() * 10e6;
 export {
   errorLog,
-  stopRun}
-;
+  stopRun
+};
 
 export class Executor {
   constructor() {
@@ -119,10 +120,10 @@ export class Executor {
 }
 
 class Controller {
-  constructor(store) {
-    this._store = store;
+  constructor(_models) {
     this.executor = new Executor();
-    this._emitter = store._emitter;
+    this._models = _models;
+    this._emitter = _models._emitter;
     this._invalid = false;
     this._offList = [];
   }
@@ -137,9 +138,13 @@ class Controller {
     this.executor.destroy();
     
     this._offList = null;
-    this._store = null;
+    this._models = null;
     this._emitter = null;
     this.executor = null;
+  }
+  
+  filterNames = (filter = () => true) => {
+    return this._models.modelNames.filter(filter);
   }
   
   on = (name, callback) => {
@@ -171,12 +176,54 @@ class Controller {
       if (this._invalid) {
         return;
       }
-      callback(Object.freeze({...this._store.model}));
+      callback(Object.freeze({...this._models.model}));
     });
-    callback(Object.freeze({...this._store.model}));
+    callback(Object.freeze({...this._models.model}));
   }
   
-  when = (name, callback, _once = false)  => {
+  when = (name, callback, _once = false) => {
+    if (this._invalid) {
+      return;
+    }
+    
+    if(Array.isArray(name)) {
+      let offList = [];
+      
+      const wrapedCallback = () => {
+        let ready = true;
+        let modelList = [];
+        
+        for (let _name of name) {
+          if (this._models.model[`${_name}Status`] !== 'set') {
+            ready = false;
+            break;
+          }
+          
+          modelList.push({
+            model: this._models.model[_name],
+            list: this._models.model[`${_name}List`]
+          });
+        }
+        
+        if(ready) {
+          callback(modelList);
+        }
+      };
+      
+      name.forEach(_name => {
+        offList.push(this._when(_name, wrapedCallback, _once));
+      });
+      
+      return () => {
+        offList && offList.forEach(off => off());
+        offList = null;
+      };
+    }
+    
+    return this._when(name, callback, _once);
+  }
+  
+  _when = (name, callback, _once = false)  => {
     if (this._invalid) {
       return;
     }
@@ -187,12 +234,12 @@ class Controller {
         return;
       }
       callback({
-        model: this._store.model[name],
-        list: this._store.model[`${name}List`]
+        model: this._models.model[name],
+        list: this._models.model[`${name}List`]
       });
     }
     
-    if (this._store.model[`${name}Status`] === 'set') {
+    if (this._models.model[`${name}Status`] === 'set') {
         wrapedCallback();
         if (_once) {
           return blank;
@@ -210,11 +257,11 @@ class Controller {
     if (this._invalid) {
       return;
     }
-    return this._store._submit(...args);
+    return this._models._submit(...args);
   } 
 }
 
-export default class Store {
+export default class Models {
   constructor(config) {
     if (!_Emitter) {
       throw new Error('must implement Emitter first');
@@ -225,7 +272,7 @@ export default class Store {
     }
     
     Object.defineProperty(this, 'myKey', {
-      value: storeKey++,
+      value: modelsKey++,
       writable: false
     });
     
@@ -345,7 +392,7 @@ export default class Store {
   }
   
   _fetch(name, ...args) {
-    return Store.globalStore.myController.executor.run(name, ...args);
+    return Models.globalModels.myController.executor.run(name, ...args);
   }
   
   _submit(param) {
@@ -525,9 +572,9 @@ export default class Store {
   } 
 }
 
-Store.inject = () => blank;
+Models.inject = () => blank;
 
-Object.defineProperty(Store, 'Emitter', {
+Object.defineProperty(Models, 'Emitter', {
   set: (Emitter) => {
     if(_Emitter) {
       throw new Error('Emitter has implemented');
@@ -542,12 +589,12 @@ Object.defineProperty(Store, 'Emitter', {
     
     _Emitter = Emitter;
     
-    Object.defineProperty(Store, 'globalStore', {
-      value: new Store({}),
+    Object.defineProperty(Models, 'globalModels', {
+      value: new Models({}),
       writable: false
     });
     
-    Store.globalRunner = (...args) => Store.globalStore.myController.executor.runner(...args);  
+    Models.globalRunner = (...args) => Models.globalModels.myController.executor.runner(...args);  
   },
   get: () => {
     return _Emitter;
