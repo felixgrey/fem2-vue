@@ -440,6 +440,85 @@ export class TransformProcess {
   }
   
   @refReturn
+  fromMatrix(config = {}) {
+    if(!this.source.length){
+      return [];
+    }
+    
+    let {
+      firstIsFileds = true,
+      fields = null
+    } = config;
+    
+    const first = this.source[0];
+    if(!fields) {
+      if(firstIsFileds) {
+        fields = first;
+      } else {
+        fields = first.map((a,i) => i);
+      } 
+    }
+    
+    if(firstIsFileds){
+      this.source.shift();
+    }
+    
+    this.data = this.source.map(arrItem => {
+      const objItem = {};
+      arrItem.forEach((v, i) => {
+        objItem[fields[i]] = v;
+      });
+      return objItem;
+    });
+    
+    if(this.useRef){
+      this.refs.fromMatrixFields = fields;
+    }   
+  }
+  
+  _toFields() {
+    if (!this.source.length) {
+      return [];
+    }
+    
+    const first = this.source[0];
+    return Object.keys(first);
+  }
+  
+  @refReturn
+  toFields() {
+    this.data = this._toFields();
+  }
+  
+  @refReturn
+  toMatrix(config = {}) {
+    if (!this.source.length) {
+      return [];
+    }
+    
+    let {
+      firstIsFileds = true,
+      fields = null
+    } = config;
+    
+    if(!fields) {
+      fields = this._toFields();
+    }
+    
+    this.data = this.source.map(objItem => {
+      return fields.map(field => objItem[field]);
+    });
+    
+    if (firstIsFileds) {
+      this.data.splice(0,0, fields);
+    }
+    
+    if (this.useRef) {
+      this.refs.toMatrixFields = fields;
+    }    
+  }
+  
+  @refReturn
   fromTree(config = {}) {
     const {data, refs} = treeToRelation(this.source, config);
     this.data = data;
@@ -447,7 +526,7 @@ export class TransformProcess {
       this.refs.fromTreeEnums = refs;
     }
   }
-    
+  
   @refReturn
   toTree(config = {}) {
     const {
