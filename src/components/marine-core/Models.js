@@ -5,6 +5,7 @@ const statusList = ['undefined', 'loading', 'locked', 'set'];
 
 let modelsKey = 1;
 
+
 export function noValue(value) {
   return value === null || value === undefined;
 }
@@ -133,6 +134,7 @@ class Controller {
       return;
     }
     this._invalid = true;
+    clearTimeout(this._watchTimeoutIndex);
     
     this._offList.forEach(off => off());
     this.executor.destroy();
@@ -141,10 +143,6 @@ class Controller {
     this._models = null;
     this._emitter = null;
     this.executor = null;
-  }
-  
-  filterNames = (filter = () => true) => {
-    return this._models.modelNames.filter(filter);
   }
   
   on = (name, callback) => {
@@ -172,11 +170,14 @@ class Controller {
       return;
     }
     let fun = _once ? 'once' : 'on';
-    this[fun]('$dataChange', ()=>{
+    this[fun]('$dataChange', () => {
       if (this._invalid) {
         return;
       }
-      callback(Object.freeze({...this._models.model}));
+      clearTimeout(this._watchTimeoutIndex);
+      this._watchTimeoutIndex = setTimeout(() => {
+        callback(Object.freeze({...this._models.model}));
+      }, 20);  
     });
     callback(Object.freeze({...this._models.model}));
   }
@@ -258,7 +259,15 @@ class Controller {
       return;
     }
     return this._models._submit(...args);
-  } 
+  }
+  
+  fitlerModel(filter = () => true) {
+    if (this._invalid) {
+      return;
+    }
+    const {modelNames, _config} = this._models;
+    return modelNames.map(name => _config[name]).filter(model => filter(model));
+  }
 }
 
 export default class Models {

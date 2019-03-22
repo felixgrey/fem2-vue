@@ -388,6 +388,11 @@ export class TransformProcess {
   }
   
   @refReturn
+  operate(callback = a => a){
+    this.data = callback(this.source, this.refs);
+  }
+  
+  @refReturn
   fromStructList(option) {
     const list = [].concat(this.source);
     if(typeof option !== 'object'){
@@ -605,6 +610,30 @@ export class TransformProcess {
     this.data = Array.from(series.keys()).map((name) => ({name, data: series.get(name)}));
   }
   
+  @refReturn
+  toObject(config = {}) {
+    const {
+      keyField,
+      valueField
+    } = config;
+    
+    if(noValue(keyField)){
+      throw new Error('toObject need keyField');
+    }
+    
+    const obj = {};
+    const getValue = noValue(valueField) ? item => item : item => item[valueField];
+    const keyList = [];
+    this.source.forEach(item => {
+      keyList.push(item[keyField]);
+      obj[item[keyField]] = getValue(item);
+    });   
+    this.data = obj;
+    if (this.useRef) {
+      this.refs.keyListOfoObject = keyList;
+    }
+  }
+  
   _toXSeries(config = {}, typeName = 'Echarts', getvalue = a => a){
     config = groupStrToConfig(config);
     if(!this.useRef && !config.xData) {
@@ -623,7 +652,9 @@ export class TransformProcess {
         this.refs[`itemMapOf${typeName}`][serIndex][dataIndex] = item;
       }
     }
-
+    
+    let min = Infinity;
+    let max = -Infinity;
     this.data = this.data.map((series, serIndex) => {
       const tempMap = {};
       series.data.forEach(seriesItem => {
@@ -636,12 +667,21 @@ export class TransformProcess {
           const item = tempMap[xValue];
           if(!noValue(item)) {
             setSeriesMap(serIndex, dataIndex, item);
+            
+            const value = item[config.valueFields[0]];
+            min = value < min ? value : min;
+            max = value > max ? value : max;
+            
             return getvalue(item);
           }
           return null;
         })
       };
     });
+    
+    if(this.useRef) {
+      this.refs[`limitValueOf${typeName}`] = {min, max};
+    }
   }
 
   @refReturn
@@ -649,6 +689,8 @@ export class TransformProcess {
     config = groupStrToConfig(config);
     this._toXSeries(config, 'NumSeries',
       item => item[config.valueFields[0]]);
+    
+   
   }
   
   @refReturn
