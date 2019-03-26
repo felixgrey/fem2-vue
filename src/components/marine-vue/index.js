@@ -38,8 +38,8 @@ Models.Emitter= class JqEvent {
 
 export {Models, $Transform, blank};
 
-Models.inject = (config) => {
-  return (Component) => {   
+Models.inject = config => {
+  return Component => {   
     if(typeof Component === 'function'){
       Component = new Component().vue;
     }

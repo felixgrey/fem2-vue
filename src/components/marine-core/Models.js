@@ -170,7 +170,8 @@ class Controller {
       return;
     }
     let fun = _once ? 'once' : 'on';
-    this[fun]('$dataChange', () => {
+    
+    const onChange = () => {
       if (this._invalid) {
         return;
       }
@@ -178,7 +179,11 @@ class Controller {
       this._watchTimeoutIndex = setTimeout(() => {
         callback(Object.freeze({...this._models.model}));
       }, 20);  
-    });
+    };
+
+    this[fun]('$dataChange', onChange);
+    this[fun]('$statusChange', onChange);
+    
     callback(Object.freeze({...this._models.model}));
   }
   

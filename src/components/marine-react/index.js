@@ -22,8 +22,7 @@ Models.inject = (config = {}) => {
       this.$Models = new Models(config);
       this.$Controller = this.$Models.controller();
       this.$Model = this.$Models.model; 
-  
-      this.setState({model: Object.freeze({...this.$Model})});
+
       this.$Controller.watch((model) => {
         this.setState({model});
       });
