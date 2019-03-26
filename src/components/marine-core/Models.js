@@ -1,6 +1,6 @@
 let _Emitter = null;
 
-const emitterMethods = ['on', 'once', 'emit', 'off', 'destroy'];
+const emitterMethods = ['on', 'once', 'emit', 'off'];
 const statusList = ['undefined', 'loading', 'locked', 'set']; 
 
 let modelsKey = 1;

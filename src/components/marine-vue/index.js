@@ -34,9 +34,6 @@ Models.Emitter= class JqEvent {
   off(name, callback) {
     this.core.off(name, callback[_callback]);
   }
-  
-  destroy(){
-  }
 };
 
 export {Models, $Transform, blank};
@@ -50,13 +47,15 @@ Models.inject = (config) => {
     // created
     const oldCreated = Component.created;
     Component.created = function() {
-      oldCreated && oldCreated.apply(this);
-      
+
       this.$Models = new Models(config);
       this.$Controller = this.$Models.controller();
       this.$Model = this.$Models.model; 
       
+      this.model = Object.freeze({...this.$Model})      
       this.$Controller.watch((model) => {this.model = model});
+      
+      oldCreated && oldCreated.apply(this);
     }
 
     // beforeDestroy
