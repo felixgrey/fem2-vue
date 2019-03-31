@@ -1,5 +1,6 @@
 <template>
   <div>
+    <HelloComponent :models="$Models" name="aaaa"></HelloComponent>
     <div>{{myData}}【{{model.data3Status}}】【{{model.data3}}】【{{model.data3List}}】</div>
     <div id='test01' style="margin-top:30px;height:1000px;background: red;">002</div>
     <div id='test02'  style="margin-top:30px;height:1000px;background: green;">003</div>
@@ -12,6 +13,7 @@
   import position from 'position';
   import getElementRelativeOffset from 'get-element-relative-offset';
   import apiData from './_apidata.js';
+  import HelloComponent from './_HelloComponent.vue';
 
 // 测试数据
 const data = [];
@@ -161,6 +163,9 @@ let modelsConfig = {
       type:'a.b.c',
       dependence:['data4','data5'],
       filter:['data1','data2','data6']
+    },
+    componentModel:{
+      default:{haha:'haha'}
     }
 };
 
@@ -190,6 +195,9 @@ export default @Models.inject(modelsConfig)
 class Component extends blank{
   
   vue = {
+    components:{
+      HelloComponent
+    },
     mounted(){
       this.$Model.data4 = {f:"sssss"};
       this.$Model.data5 = {g:'sddgggg'};
@@ -200,7 +208,7 @@ class Component extends blank{
       
       toDomPosition(document.getElementById('test02'))
 
-      
+      this.$Controller.run('HelloComponent.test:aaaa',1,2,3);
       
     },
     updated(){

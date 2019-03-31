@@ -5,7 +5,6 @@ const statusList = ['undefined', 'loading', 'locked', 'set'];
 
 let modelsKey = 1;
 
-
 export function noValue(value) {
   return value === null || value === undefined;
 }
@@ -122,11 +121,11 @@ export class Executor {
 
 class Controller {
   constructor(_models) {
-    this.executor = new Executor();
     this._models = _models;
     this._emitter = _models._emitter;
     this._invalid = false;
     this._offList = [];
+    this._runnerList = [];
   }
   
   destroy() {
@@ -134,15 +133,30 @@ class Controller {
       return;
     }
     this._invalid = true;
-    clearTimeout(this._watchTimeoutIndex);
-    
+    clearTimeout(this._watchTimeoutIndex);   
     this._offList.forEach(off => off());
-    this.executor.destroy();
-    
+    this._runnerList.forEach(name => {
+       this._models._executor.runner(name, false);
+    });    
+    this._runnerList = null;
     this._offList = null;
     this._models = null;
     this._emitter = null;
-    this.executor = null;
+  }
+  
+  run(name, ...args) {
+    if (this._invalid) {
+      return;
+    }
+    return this._models._executor.run(name, ...args);
+  }
+  
+  runner = (name, callback) => {
+    if (this._invalid) {
+      return;
+    }
+    this._runnerList.push(name);
+    this._models._executor.runner(name, callback);
   }
   
   on = (name, callback) => {
@@ -177,14 +191,25 @@ class Controller {
       }
       clearTimeout(this._watchTimeoutIndex);
       this._watchTimeoutIndex = setTimeout(() => {
-        callback(Object.freeze({...this._models.model}));
+        callback(this.getModel());
       }, 20);  
     };
 
     this[fun]('$dataChange', onChange);
     this[fun]('$statusChange', onChange);
     
-    callback(Object.freeze({...this._models.model}));
+    callback(this.getModel());
+  }
+  
+  getModel() {
+    return Object.freeze({...this._models.model});
+  }
+  
+  isNotAble = list => {
+    if (this._invalid) {
+      return;
+    }
+    return ([].concat(list)).reduce((a, b) => (a || this._models.model[`${b}Status`] !== 'set'), false);
   }
   
   when = (name, callback, _once = false) => {
@@ -285,13 +310,22 @@ export default class Models {
       throw new Error('store must has config');
     }
     
+    if (config.$singleFetch === false) {
+      this._singleFetch = false;
+    } else {
+      this._singleFetch = true;
+    }
+    
     Object.defineProperty(this, 'myKey', {
       value: modelsKey++,
       writable: false
     });
     
+    this._fetchIndex = {};   
     this.model = {};
     this.modelNames = [];
+    
+    this._executor = new Executor();
     
     this._emitter = new _Emitter();
     this._config = config;
@@ -366,11 +400,17 @@ export default class Models {
 
           clearTimeout(this._lagFetchIndex);
           this._lagFetchIndex = setTimeout(() => {
-            if(this.model[`${modelName}Status`] === 'loading'){
+            if (this._singleFetch && this.model[`${modelName}Status`] === 'loading') {
               errorLog(`can not fetch ${modelName} when it is loading`);
               return;
             }
             this.model[`${modelName}Status`] = 'loading';
+            
+            if(!this._fetchIndex[modelName]){
+              this._fetchIndex[modelName] = 0;
+            }
+            this._fetchIndex[modelName]++;
+            const myRequestIndex = this._fetchIndex[modelName];
             
             Promise.resolve(this._fetch(type, {
                 type,
@@ -380,6 +420,9 @@ export default class Models {
                 modelList: this.model[`${modelName}List`]
               })
             ).then((newModel) => {
+              if(myRequestIndex !== this._fetchIndex[modelName]) {
+                return;
+              }
               if(newModel === undefined){
                 throw new Error(`${modelName} can not be undefined`);
               }
@@ -406,7 +449,7 @@ export default class Models {
   }
   
   _fetch(name, ...args) {
-    return Models.globalModels.myController.executor.run(name, ...args);
+    return Models.globalModels._executor.run(name, ...args);
   }
   
   _submit(param) {
@@ -479,7 +522,8 @@ export default class Models {
         if(this._invalid) {
           return undefined;
         }
-        return this._data[name][0]
+        const value = this._data[name][0];
+        return  noValue(value) ? {} : value;
       },
       set: (newValue) => {
         if(this._invalid) {
@@ -577,16 +621,70 @@ export default class Models {
     clearTimeout(this._lagFetchIndex);
     this._emitter.emit('$storeDestroy');
     this._emitter.destroy();
+    this._executor.destroy();
+    this._executor = null;
     this._emitter = null;
     this._config  = null;
     this._data  = null;
     this._status = null;
+    this._fetchIndex = null;
     this.model = null;
-    this.modelNames = null;
+    this.modelNames = null;  
   } 
 }
 
 Models.inject = () => blank;
+Models.component = () => blank;
+
+Models.componentView = (config = {}, getName = () => blank,getModels = () => blank, setModel = () => blank) => {
+  return {
+    afterCreated: (that, afterCreated) => {
+      const models = getModels.call(that);
+      if(!models) {
+       throw new Error('props of component need models');
+      }   
+      that.$Models = models;
+      that.$Controller = that.$Models.controller();
+      that.$Model = that.$Models.model; 
+      that.$Controller.watch((model) => setModel.call(that, model));
+      afterCreated && afterCreated.apply(that);
+      if (config.runner) {
+        if(noValue(config.nameSpace)){
+          throw new Error('runner need nameSpace');
+        }
+        Object.keys(config.runner).forEach((name) => {
+          that.$Controller.runner(`${config.nameSpace}.${name}:${getName.call(that) || ''}`, config.runner[name]);
+        });
+      }     
+    },
+    beforeDestroy: (that, beforeDestroy) => {
+      beforeDestroy && beforeDestroy.apply(this);     
+      that.$Controller && that.$Controller.destroy();
+      that.$Controller = null;
+      that.$Models = null;
+      that.$Model = null;
+    }
+  }
+};
+
+Models.modelsView = (config = {}, setModel = () => blank) => {
+  return {
+    afterCreated: (that, afterCreated) => {
+      that.$Models = new Models(config);
+      that.$Controller = that.$Models.controller();
+      that.$Model = that.$Models.model; 
+      that.$Controller.watch((model) => setModel.call(that, model));    
+      afterCreated && afterCreated.apply(that);
+    },
+    beforeDestroy: (that, beforeDestroy) => {
+      beforeDestroy && beforeDestroy.apply(that);
+      that.$Models.destroy();
+      that.$Models = null;
+      that.$Controller = null;
+      that.$Model = null;
+    }
+  }
+};
 
 Object.defineProperty(Models, 'Emitter', {
   set: (Emitter) => {
@@ -608,7 +706,7 @@ Object.defineProperty(Models, 'Emitter', {
       writable: false
     });
     
-    Models.globalRunner = (...args) => Models.globalModels.myController.executor.runner(...args);  
+    Models.globalRunner = (...args) => Models.globalModels._executor.runner(...args);  
   },
   get: () => {
     return _Emitter;

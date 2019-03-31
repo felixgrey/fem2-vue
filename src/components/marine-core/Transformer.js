@@ -393,6 +393,16 @@ export class TransformProcess {
   }
   
   @refReturn
+  map(callback = a => a){
+    this.data = ([].concat(this.source)).map(callback);
+  }
+  
+  @refReturn
+  filter(callback = a => a){
+    this.data = ([].concat(this.source)).filter(callback);
+  }
+  
+  @refReturn
   fromStructList(option) {
     const list = [].concat(this.source);
     if(typeof option !== 'object'){

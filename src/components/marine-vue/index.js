@@ -1,6 +1,7 @@
-import {Models, $Transform, blank} from '@/components/marine-core';
+import {Models, $Transform, blank, noValue} from '@/components/marine-core';
 import $ from 'jquery';
 
+export {Models, $Transform, blank, noValue};
 
 // 随机函数名
 const _callback =`_wrapedEmitterCallback${Date.now()}`;
@@ -36,37 +37,78 @@ Models.Emitter= class JqEvent {
   }
 };
 
-export {Models, $Transform, blank};
-
-Models.inject = config => {
-  return Component => {   
+Models.component = (config = {}) => {
+  return Component => {
     if(typeof Component === 'function'){
-      Component = new Component().vue;
+      Component = new Component().vue || {};
     }
+    
+    const {afterCreated, beforeDestroy} = Models.componentView(
+      config,
+      function() {
+        return this.name;
+      },
+      function() {
+        return this.models;
+      },
+      function(model) {
+        this.model = model;
+      }
+    );
     
     // created
     const oldCreated = Component.created;
     Component.created = function() {
+      afterCreated(this, oldCreated);    
+    }
+    
+    // beforeDestroy
+    const _beforeDestroy = Component.beforeDestroy;
+    Component.beforeDestroy = function() {
+      beforeDestroy(this, _beforeDestroy);
+    }
+    
+    // props
+    const props = Component.props = Component.props || {};
+    props.name = {type: String};
+    props.models = {type: Object};
+    
+    // data
+    const oldData = Component.data || blank;
+    if(typeof oldData === 'function') {
+      Component.data = function (){
+        const result = {...oldData.bind(this)(), model:{}};
+        return result;
+      }
+    } else {
+      Component.data = {...oldData, model:{}};
+    }
+    
+    return Component;
+    
+  }
+}
 
-      this.$Models = new Models(config);
-      this.$Controller = this.$Models.controller();
-      this.$Model = this.$Models.model; 
-      
-      this.model = Object.freeze({...this.$Model})      
-      this.$Controller.watch((model) => {this.model = model});
-      
-      oldCreated && oldCreated.apply(this);
+Models.inject = config => {
+  return Component => {   
+    if(typeof Component === 'function'){
+      Component = new Component().vue || {};
+    }
+
+    const {afterCreated, beforeDestroy} = Models.modelsView(config, function(model) {
+      this.model = model;
+    });
+    
+    // created
+    const oldCreated = Component.created;
+    Component.created = function() {
+      afterCreated(this, oldCreated);
     }
 
     // beforeDestroy
-    const beforeDestroy = Component.beforeDestroy;
+    const _beforeDestroy = Component.beforeDestroy;
     Component.beforeDestroy = function() {
-      beforeDestroy && beforeDestroy.apply(this);
-      
-      this.$Models.destroy();
-      this.$Models = null;
-      this.$Controller = null;
-      this.$Model = null;
+      beforeDestroy(this, _beforeDestroy);
     }
 
     // data
