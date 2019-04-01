@@ -29,6 +29,7 @@ export class Executor {
     this._before = {};
     this._after = {};
     this._runner = {};
+    this._lagFetchIndex = {};
   }
   
   runner(name, fun) {
@@ -408,8 +409,11 @@ export default class Models {
             Object.assign(params, this.model[dName]);
           }
 
-          clearTimeout(this._lagFetchIndex);
-          this._lagFetchIndex = setTimeout(() => {
+          clearTimeout(this._lagFetchIndex[modelName]);
+          this._lagFetchIndex[modelName] = setTimeout(() => {
+            if (this._invalid) {
+              return;
+            }
             if (this._singleFetch && this.model[`${modelName}Status`] === 'loading') {
               errorLog(`can not fetch ${modelName} when it is loading`);
               return;
@@ -430,6 +434,9 @@ export default class Models {
                 modelList: this.model[`${modelName}List`]
               })
             ).then((newModel) => {
+              if (this._invalid) {
+                return;
+              }
               if(myRequestIndex !== this._fetchIndex[modelName]) {
                 return;
               }
@@ -438,6 +445,9 @@ export default class Models {
               }
               this.model[`${modelName}List`] = [].concat(newModel);
             }).catch((e) => {
+              if (this._invalid) {
+                return;
+              }
               this.model[`${modelName}Status`] = 'set';
               throw new Error(e);
             });
@@ -628,7 +638,9 @@ export default class Models {
       return;
     }
     this._invalid = true;
-    clearTimeout(this._lagFetchIndex);
+    Object.keys(this._lagFetchIndex).forEach(index => {
+      clearTimeout(index);
+    });
     this._emitter.emit('$storeDestroy');
     this._emitter.destroy();
     this._executor.destroy();
