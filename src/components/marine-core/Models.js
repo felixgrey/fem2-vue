@@ -352,11 +352,21 @@ export default class Models {
       let {
         type,
         default: _default,
+        clear,
         reset,
         snapshot,
         filter = [],
         dependence = []
       } = config[modelName];
+      
+      if (!noValue(clear)) {
+        clear = [].concat(clear);
+        clear.forEach(name => {
+          when(name, () => {
+            this.model[`${modelName}List`] = [];
+          })
+        })      
+      }
       
       if (!noValue(reset)) {
         reset = [].concat(reset);
