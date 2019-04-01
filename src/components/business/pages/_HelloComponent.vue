@@ -8,7 +8,7 @@
   
   
 export default @Models.component({
-  nameSpace:'HelloComponent',
+  namespace:'HelloComponent',
   runner:{
     test: function(...args){
       console.log(args);

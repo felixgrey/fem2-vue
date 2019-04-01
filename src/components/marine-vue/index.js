@@ -57,9 +57,9 @@ Models.component = (config = {}) => {
     );
     
     // created
-    const oldCreated = Component.created;
+    const created = Component.created;
     Component.created = function() {
-      afterCreated(this, oldCreated);    
+      afterCreated(this, created);    
     }
     
     // beforeDestroy
@@ -100,9 +100,9 @@ Models.inject = config => {
     });
     
     // created
-    const oldCreated = Component.created;
+    const created = Component.created;
     Component.created = function() {
-      afterCreated(this, oldCreated);
+      afterCreated(this, created);
     }
 
     // beforeDestroy

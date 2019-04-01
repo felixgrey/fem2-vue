@@ -1,7 +1,7 @@
 import { EventEmitter } from 'events';
-import {Models, $Transform, blank, noValue} from '@/components/marine-core';
+import {Models, $Transform, blank} from '@/components/marine-core';
 
-export {Models, $Transform, blank, noValue};
+export {Models, $Transform, blank};
 
 Models.Emitter = class NodeEvent extends EventEmitter {
   constructor(...args) {
@@ -14,59 +14,56 @@ Models.Emitter = class NodeEvent extends EventEmitter {
   }
 }
 
-Models.component = () => {
+Models.component = (config = {}) => {
   return Component => {
-    
-    // componentWillMount
-    const oldComponentWillMount = Component.prototype.componentWillMount;
-    Component.prototype.componentWillMount = function() {
-      if(!this.props.models) {
-       throw new Error('props of component need models');
+    const {afterCreated, beforeDestroy} = Models.componentView(
+      config,
+      function() {
+        return this.props.name;
+      },
+      function() {
+        return this.props.models;
+      },
+      function(model) {
+        this.setState({model});
       }
-      this.$Models = this.props.models;
-      this.$Controller = this.$Models.controller();
-      this.$Model = this.$Models.model; 
-      this.$Controller.watch((model) => {this.setState({model});});   
-      oldComponentWillMount && oldComponentWillMount.apply(this);
-    }
+    );
     
-    // componentWillUnmount
-    const oldComponentWillUnmount = Component.prototype.componentWillUnmount;
-    Component.prototype.componentWillUnmount = function() {
-      oldComponentWillUnmount && oldComponentWillUnmount.apply(this);  
-      this.$Controller.destroy();
-      this.$Controller = null;
-      this.$Models = null;
-      this.$Model = null;
-    }
-    
-    return Component;
-    
-  };
-}
-
-Models.inject = (config = {}) => {
-  return Component => {  
     // componentWillMount
-    const oldComponentWillMount = Component.prototype.componentWillMount;
+    const componentWillMount = Component.prototype.componentWillMount;
     Component.prototype.componentWillMount = function() {
-      this.$Models = new Models(config);
-      this.$Controller = this.$Models.controller();
-      this.$Model = this.$Models.model; 
-      this.$Controller.watch((model) => {this.setState({model});});   
-      oldComponentWillMount && oldComponentWillMount.apply(this);
+      afterCreated(this, componentWillMount);    
     }
     
     // componentWillUnmount
-    const oldComponentWillUnmount = Component.prototype.componentWillUnmount;
+    const componentWillUnmount = Component.prototype.componentWillUnmount;
     Component.prototype.componentWillUnmount = function() {
-      oldComponentWillUnmount && oldComponentWillUnmount.apply(this);    
-      this.$Models.destroy();
-      this.$Models = null;
-      this.$Controller = null;
-      this.$Model = null;
+      beforeDestroy(this, componentWillUnmount);
     }
     
     return Component;
+    
   }
-}
+};
+
+Models.inject = config => {
+  return Component => {   
+    const {afterCreated, beforeDestroy} = Models.modelsView(config, function(model) {
+      this.setState({model});
+    });
+    
+    // componentWillMount
+    const componentWillMount = Component.prototype.componentWillMount;
+    Component.prototype.componentWillMount = function() {
+      afterCreated(this, componentWillMount);
+    }
+
+    // componentWillUnmount
+    const componentWillUnmount = Component.prototype.componentWillUnmount;
+    Component.prototype.componentWillUnmount = function() {
+      beforeDestroy(this, componentWillUnmount);
+    }
+
+    return Component;
+  }; 
+};

@@ -467,7 +467,7 @@ export default class Models {
     const oldList = lock.map(name => {  
       const nameStatus = `${name}Status`;
       const old = this.model[nameStatus];
-      this.model[nameStatus] = 'lock';
+      this.model[nameStatus] = 'locked';
       return {old, nameStatus };
     });
     
@@ -642,18 +642,22 @@ Models.componentView = (config = {}, getName = () => blank,getModels = () => bla
       const models = getModels.call(that);
       if(!models) {
        throw new Error('props of component need models');
-      }   
+      }
+      that.$Name = getName.call(that)  ;
+      that.$Name = noValue(that.$Name) ? '' : that.$Name;
       that.$Models = models;
       that.$Controller = that.$Models.controller();
+      that.$Run = (...args) => {return that.$Controller.run(...args)};
+      that.$Submit = (...args) => {return that.$Controller.submit(...args)};
       that.$Model = that.$Models.model; 
       that.$Controller.watch((model) => setModel.call(that, model));
       afterCreated && afterCreated.apply(that);
       if (config.runner) {
-        if(noValue(config.nameSpace)){
-          throw new Error('runner need nameSpace');
+        if(noValue(config.namespace)){
+          throw new Error('runner need namespace');
         }
         Object.keys(config.runner).forEach((name) => {
-          that.$Controller.runner(`${config.nameSpace}.${name}:${getName.call(that) || ''}`, config.runner[name]);
+          that.$Controller.runner(`${config.nameSpace}.${name}:${that.$Name}`, config.runner[name]);
         });
       }     
     },
@@ -672,6 +676,8 @@ Models.modelsView = (config = {}, setModel = () => blank) => {
     afterCreated: (that, afterCreated) => {
       that.$Models = new Models(config);
       that.$Controller = that.$Models.controller();
+      that.$Run = (...args) => {return that.$Controller.run(...args)};
+      that.$Submit = (...args) => {return that.$Controller.submit(...args)};
       that.$Model = that.$Models.model; 
       that.$Controller.watch((model) => setModel.call(that, model));    
       afterCreated && afterCreated.apply(that);

@@ -1,9 +1,11 @@
 <template>
   <div>
     <HelloComponent :models="$Models" name="aaaa"></HelloComponent>
+    <div>{{model.data1Status}}</div>
     <div>{{myData}}【{{model.data3Status}}】【{{model.data3}}】【{{model.data3List}}】</div>
-    <div id='test01' style="margin-top:30px;height:1000px;background: red;">002</div>
-    <div id='test02'  style="margin-top:30px;height:1000px;background: green;">003</div>
+    <div id='test01' style="margin-top:30px;height:1000px;background: red;display: none;">002</div>
+    <div id='test02'  style="margin-top:30px;height:1000px;background: green;display: none;">003</div>
+    <div><button @click="submit">submit</button></div>
   </div>  
 </template>
 
@@ -67,7 +69,11 @@ for (let i = 18; i < 20; i++) {
 
 Models.globalRunner('a.b.c', function(params){
   console.log(params)
-  return ['aaa','bbbb','ccccc'];
+  return new Promise((r) => {
+    setTimeout(() => {
+      r(['aaa','bbbb','ccccc']);
+    },5000)
+  }) 
 })
 
 //console.log($Transform(data)
@@ -206,13 +212,24 @@ class Component extends blank{
 //      this.$Model.data5 = {g:'sddgggg'};
       }, 2000);
       
-      toDomPosition(document.getElementById('test02'))
+      //toDomPosition(document.getElementById('test02'))
 
-      this.$Controller.run('HelloComponent.test:aaaa',1,2,3);
+      this.$Run('HelloComponent.test:aaaa',1,2,3);
+      
+      
       
     },
+    methods:{
+      submit(){
+        this.$Submit({
+          type: 'a.b.c',
+          lock:['data1'],
+          data:[11,22]
+        })
+      }
+    },
     updated(){
-      toDomPosition(document.getElementById('test02'))
+      //toDomPosition(document.getElementById('test02'))
     },
     data(){
       return {
