@@ -16,6 +16,7 @@
   import getElementRelativeOffset from 'get-element-relative-offset';
   import apiData from './_apidata.js';
   import HelloComponent from './_HelloComponent.vue';
+  import './mockPhr.js'
 
 // 测试数据
 const data = [];

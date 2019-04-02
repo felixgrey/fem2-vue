@@ -29,7 +29,6 @@ export class Executor {
     this._before = {};
     this._after = {};
     this._runner = {};
-    this._lagFetchIndex = {};
   }
   
   runner(name, fun) {
@@ -322,7 +321,8 @@ export default class Models {
       writable: false
     });
     
-    this._fetchIndex = {};   
+    this._fetchIndex = {};  
+    this._lagFetchTimeoutIndex = {};
     this.model = {};
     this.modelNames = [];
     
@@ -409,8 +409,8 @@ export default class Models {
             Object.assign(params, this.model[dName]);
           }
 
-          clearTimeout(this._lagFetchIndex[modelName]);
-          this._lagFetchIndex[modelName] = setTimeout(() => {
+          clearTimeout(this._lagFetchTimeoutIndex[modelName]);
+          this._lagFetchTimeoutIndex[modelName] = setTimeout(() => {
             if (this._invalid) {
               return;
             }
@@ -638,7 +638,7 @@ export default class Models {
       return;
     }
     this._invalid = true;
-    Object.keys(this._lagFetchIndex).forEach(index => {
+    Object.keys(this._lagFetchTimeoutIndex).forEach(index => {
       clearTimeout(index);
     });
     this._emitter.emit('$storeDestroy');
@@ -651,7 +651,8 @@ export default class Models {
     this._status = null;
     this._fetchIndex = null;
     this.model = null;
-    this.modelNames = null;  
+    this.modelNames = null;
+    this._lagFetchTimeoutIndex = null;
   } 
 }
 
